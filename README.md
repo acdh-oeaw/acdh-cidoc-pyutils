@@ -48,6 +48,24 @@ print(uri)
 # https://hansi4ever.com/8b912e66-9713-11ed-8065-65787314013c
 ```
 
+### create an E52_Time-Span graph
+
+```python
+from acdh_cidoc_pyutils import create_e52, make_uri
+uri = make_uri()
+e52 = create_e52(uri, begin_of_begin="1800-12-12", end_of_end="1900-01")
+print(e52.serialize())
+
+# returns
+# @prefix ns1: <http://www.cidoc-crm.org/cidoc-crm/> .
+# @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+# @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# <https://hansi4ever.com/387fb457-971b-11ed-8065-65787314013c> a ns1:E52_Time-Span ;
+#     rdfs:label "1800-12-12 - 1900-01"^^xsd:string ;
+#     ns1:P82a_begin_of_the_begin "1800-12-12"^^xsd:date ;
+#     ns1:P82b_end_of_the_end "1900-01"^^xsd:gYearMonth .
+```
 ## development
 
 * `pip install -r requirements_dev.txt`
