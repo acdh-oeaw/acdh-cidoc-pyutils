@@ -4,3 +4,10 @@
 
 # acdh-cidoc-pyutils
 Helper functions for the generation of CIDOC CRMish RDF
+
+
+## development
+
+* `pip install -r requirements_dev.txt`
+* `flake8` -> linting
+* `coveage run -m pytest` -> runs tests and creates coverage stats
