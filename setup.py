@@ -8,9 +8,7 @@ with open("README.md") as readme_file:
     readme = readme_file.read()
 
 
-requirements = [
-    "rdflib>=6,<7"
-]
+requirements = ["rdflib>=6,<7"]
 
 
 setup(
