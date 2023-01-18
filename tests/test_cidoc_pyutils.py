@@ -1,6 +1,7 @@
 import unittest
+from rdflib import Graph
 
-from acdh_cidoc_pyutils import date_to_literal, make_uri
+from acdh_cidoc_pyutils import date_to_literal, make_uri, create_e52
 
 DATE_STRINGS = ["1900", "-1900", "1900-01", "1901-01-01", "foo"]
 DATE_TYPES = [
@@ -36,3 +37,14 @@ class TestTestTest(unittest.TestCase):
         uri = make_uri(domain=domain, version=version, prefix=prefix)
         for x in [domain, version, prefix]:
             self.assertTrue(x in f"{uri}")
+
+    def test_004_create_e52(self):
+        uri = make_uri()
+        begin_of_begin = "1234-05-06"
+        e52 = create_e52(uri)
+        self.assertTrue(isinstance(e52, Graph))
+        e52 = create_e52(uri, begin_of_begin=begin_of_begin)
+        graph_string = f"{e52.serialize()}"
+        self.assertTrue(begin_of_begin in graph_string)
+        e52 = create_e52(uri, end_of_end=begin_of_begin)
+        self.assertTrue(begin_of_begin in graph_string)
