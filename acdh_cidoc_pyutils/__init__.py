@@ -4,6 +4,10 @@ from rdflib import Graph, Literal, URIRef, XSD, RDF, RDFS
 from acdh_cidoc_pyutils.namespaces import CIDOC
 
 
+def normalize_string(string: str) -> str:
+    return " ".join(" ".join(string.split()).split())
+
+
 def date_to_literal(date_str: str) -> Literal:
 
     if len(date_str) == 4:

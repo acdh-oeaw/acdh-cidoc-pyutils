@@ -1,7 +1,7 @@
 import unittest
 from rdflib import Graph
 
-from acdh_cidoc_pyutils import date_to_literal, make_uri, create_e52
+from acdh_cidoc_pyutils import date_to_literal, make_uri, create_e52, normalize_string
 
 DATE_STRINGS = ["1900", "-1900", "1900-01", "1901-01-01", "foo"]
 DATE_TYPES = [
@@ -48,3 +48,11 @@ class TestTestTest(unittest.TestCase):
         self.assertTrue(begin_of_begin in graph_string)
         e52 = create_e52(uri, end_of_end=begin_of_begin)
         self.assertTrue(begin_of_begin in graph_string)
+
+    def test_005_normalize_string(self):
+        string = """\n\nhallo
+mein schatz ich liebe    dich
+    du bist         die einzige für mich
+        """
+        normalized = normalize_string(string)
+        self.assertTrue("\n" not in normalized)
