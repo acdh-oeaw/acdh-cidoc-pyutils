@@ -66,6 +66,20 @@ print(e52.serialize())
 #     ns1:P82a_begin_of_the_begin "1800-12-12"^^xsd:date ;
 #     ns1:P82b_end_of_the_end "1900-01"^^xsd:gYearMonth .
 ```
+
+### normalize_string
+
+```python
+from acdh_cidoc_pyutils import normalize_string
+string = """\n\nhallo
+mein schatz ich liebe    dich
+    du bist         die einzige für mich
+        """
+print(normalize_string(string))
+# returns
+# hallo mein schatz ich liebe dich du bist die einzige für mich
+```
+
 ## development
 
 * `pip install -r requirements_dev.txt`
