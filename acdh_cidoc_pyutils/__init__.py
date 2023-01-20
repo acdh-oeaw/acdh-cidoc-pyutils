@@ -1,4 +1,7 @@
 import uuid
+from typing import Union
+
+from lxml.etree import Element
 from rdflib import Graph, Literal, URIRef, XSD, RDF, RDFS
 
 from acdh_cidoc_pyutils.namespaces import CIDOC
@@ -6,6 +9,21 @@ from acdh_cidoc_pyutils.namespaces import CIDOC
 
 def normalize_string(string: str) -> str:
     return " ".join(" ".join(string.split()).split())
+
+
+def extract_begin_end(date_object: Union[Element, dict]) -> tuple[str, str]:
+    begin, end = "", ""
+    if date_object.get("when-iso", "") != "":
+        return (date_object.get("when-iso"), date_object.get("when-iso"))
+    elif date_object.get("when", "") != "":
+        return (date_object.get("when"), date_object.get("when"))
+    begin = date_object.get("notBefore", "")
+    end = date_object.get("notAfter", "")
+    if begin != "" and end == "":
+        end = begin
+    if end != "" and begin == "":
+        begin = end
+    return (begin, end)
 
 
 def date_to_literal(date_str: str) -> Literal:
