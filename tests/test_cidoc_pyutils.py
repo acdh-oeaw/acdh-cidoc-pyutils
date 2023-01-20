@@ -1,6 +1,8 @@
 import unittest
+import lxml.etree as ET
+
 from lxml.etree import Element
-from rdflib import Graph
+from rdflib import Graph, URIRef, RDF
 
 from acdh_cidoc_pyutils import (
     date_to_literal,
@@ -8,7 +10,60 @@ from acdh_cidoc_pyutils import (
     create_e52,
     normalize_string,
     extract_begin_end,
+    make_appelations,
 )
+from acdh_cidoc_pyutils.namespaces import NSMAP, CIDOC
+
+sample = """
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <person xml:id="DWpers0091" sortKey="Gulbransson_Olaf_Leonhard">
+        <birth when="1873-05-26">26. 5. 1873<placeName key="#DWplace00139"
+                >Christiania (Oslo)</placeName></birth>
+        <death when="1958-09-18">18. 9. 1958<placeName key="#DWplace00353"
+                >Tegernsee</placeName></death>
+        <persName type="pref">Gulbransson, Olaf</persName>
+        <persName type="full">Gulbransson, Olaf Leonhard</persName>
+        <occupation type="prim" n="01">Zeichner und Maler</occupation>
+        <occupation notBefore="1902" notAfter="1944" n="02">Mitarbeiter des <title
+                level="j">Simplicissimus</title></occupation>
+        <idno type="GND">118543539</idno>
+    </person>
+    <place xml:id="DWplace00092">
+        <placeName type="orig_name">Reval (Tallinn)</placeName>
+        <placeName xml:lang="de" type="simple_name">Reval</placeName>
+        <placeName xml:lang="und" type="alt_label">Tallinn</placeName>
+        <idno type="pmb">https://pmb.acdh.oeaw.ac.at/entity/42085/</idno>
+    </place>
+    <place xml:id="DWplace00010">
+        <placeName xml:lang="de" type="orig_name">Jaworzno</placeName>
+        <idno type="pmb">https://pmb.acdh.oeaw.ac.at/entity/94280/</idno>
+    </place>
+    <org xml:id="DWorg00001">
+        <orgName xml:lang="de" type="orig_name">Stahlhelm</orgName>
+        <orgName xml:lang="de" type="short">Stahlhelm</orgName>
+        <orgName xml:lang="de" type="full">Stahlhelm, Bund der Frontsoldaten</orgName>
+        <idno type="pmb">https://pmb.acdh.oeaw.ac.at/entity/135089/</idno>
+        <idno type="gnd">https://d-nb.info/gnd/63616-2</idno>
+    </org>
+    <org xml:id="DWorg00002">
+        <orgName xml:lang="de" type="orig_name">GDVP</orgName>
+        <orgName xml:lang="de" type="short">GDVP</orgName>
+        <orgName xml:lang="de" type="full">Großdeutsche Volkspartei</orgName>
+        <idno type="pmb">https://pmb.acdh.oeaw.ac.at/entity/135090/</idno>
+        <idno type="gnd">https://d-nb.info/gnd/410560-6</idno>
+    </org>
+    <place xml:id="DWplace00013">
+        <placeName type="orig_name">Radebeul (?)</placeName>
+        <placeName xml:lang="de">Radebeul</placeName>
+        <placeName xml:lang="und" type="alt_label"></placeName>
+        <idno type="pmb">https://pmb.acdh.oeaw.ac.at/entity/45569/</idno>
+    </place>
+    <bibl xml:id="DWbible01113">
+        <title>Hansi4ever</title>
+    </bibl>
+</TEI>
+"""
+
 
 DATE_STRINGS = ["1900", "-1900", "1900-01", "1901-01-01", "foo"]
 DATE_TYPES = [
@@ -100,3 +155,21 @@ mein schatz ich liebe    dich
         begin, end = extract_begin_end(date_object)
         self.assertTrue(begin, "1800")
         self.assertTrue(end, date_string)
+
+    def test_007_make_appelations(self):
+        g = Graph()
+        doc = ET.fromstring(sample)
+        for x in doc.xpath(".//tei:place|tei:org|tei:person|tei:bibl", namespaces=NSMAP):
+            xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
+            item_id = f"https://foo/bar/{xml_id}"
+            subj = URIRef(item_id)
+            g.add((subj, RDF.type, CIDOC["hansi"]))
+            g += make_appelations(
+                subj, x, type_domain="http://hansi/4/ever", default_lang="it"
+            )
+        data = g.serialize(format="turtle")
+        g.serialize("test.ttl", format="turtle")
+        self.assertTrue('rdfs:label "Stahlhelm, Bund der Frontsoldaten"@de' in data)
+        self.assertTrue("@it" in data)
+        self.assertTrue("P2_has_type <http://hansi/4/ever/orig-name>" in data)
+        self.assertTrue('dfs:label "Gulbransson, Olaf"' in data)
