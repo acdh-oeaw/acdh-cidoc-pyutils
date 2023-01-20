@@ -13,7 +13,7 @@ Helper functions for the generation of CIDOC CRMish RDF
 ### date-like-string to casted rdflib.Literal
 
 ```python
-from acdh_cidoc_pyutils import date_to_literal
+from acdh_cidoc_pyutils import date_to_literal d
 dates = [
     "1900",
     "1900-01",
