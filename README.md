@@ -67,6 +67,70 @@ print(e52.serialize())
 #     ns1:P82b_end_of_the_end "1900-01"^^xsd:gYearMonth .
 ```
 
+### creates appelations from tei:org|place|person
+
+takes a tei:person|place|org node, extracts `persName, placeName and orgName` texts, `@xml:lang` and custom type values and returns `cidoc:E33_41` and `cidoc:E55` nodes linked via `cidoc:P1_is_identified_by` and `cidoc:P2_has_type`
+
+```python
+import lxml.etree as ET
+from rdflib import URIRef
+from acdh_cidoc_pyutils import make_appelations
+
+sample = """
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <place xml:id="DWplace00092">
+        <placeName type="orig_name">Reval (Tallinn)</placeName>
+        <placeName xml:lang="de" type="simple_name">Reval</placeName>
+        <placeName xml:lang="und" type="alt_label">Tallinn</placeName>
+        <idno type="pmb">https://pmb.acdh.oeaw.ac.at/entity/42085/</idno>
+    </place>
+</TEI>"""
+
+doc = ET.fromstring(sample)
+g = Graph()
+for x in doc.xpath(".//tei:place|tei:org|tei:person|tei:bibl", namespaces=NSMAP):
+    xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
+    item_id = f"https://foo/bar/{xml_id}"
+    subj = URIRef(item_id)
+    g.add((subj, RDF.type, CIDOC["E53_Place"]))
+    g += make_appelations(
+        subj, x, type_domain="http://hansi/4/ever", default_lang="it"
+    )
+
+g.serialize(format="ttl")
+# returns
+```
+```rdf
+@prefix ns1: <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<https://foo/bar/dwplace00092> a ns1:E53_Place ;
+    ns1:P1_is_identified_by <https://foo/bar/dwplace00092/appelation/0>,
+        <https://foo/bar/dwplace00092/appelation/1>,
+        <https://foo/bar/dwplace00092/appelation/2> .
+
+<http://hansi/4/ever/alt-label> a ns1:E55_Type ;
+    rdfs:label "alt_label" .
+
+<http://hansi/4/ever/orig-name> a ns1:E55_Type ;
+    rdfs:label "orig_name" .
+
+<http://hansi/4/ever/simple-name> a ns1:E55_Type ;
+    rdfs:label "simple_name" .
+
+<https://foo/bar/dwplace00092/appelation/0> a ns1:E33_E41_Linguistic_Appellation ;
+    rdfs:label "Reval (Tallinn)"@it ;
+    ns1:P2_has_type <http://hansi/4/ever/orig-name> .
+
+<https://foo/bar/dwplace00092/appelation/1> a ns1:E33_E41_Linguistic_Appellation ;
+    rdfs:label "Reval"@de ;
+    ns1:P2_has_type <http://hansi/4/ever/simple-name> .
+
+<https://foo/bar/dwplace00092/appelation/2> a ns1:E33_E41_Linguistic_Appellation ;
+    rdfs:label "Tallinn"@und ;
+    ns1:P2_has_type <http://hansi/4/ever/alt-label> .
+
+```
 ### normalize_string
 
 ```python
