@@ -2,7 +2,13 @@ import unittest
 from lxml.etree import Element
 from rdflib import Graph
 
-from acdh_cidoc_pyutils import date_to_literal, make_uri, create_e52, normalize_string, extract_begin_end
+from acdh_cidoc_pyutils import (
+    date_to_literal,
+    make_uri,
+    create_e52,
+    normalize_string,
+    extract_begin_end,
+)
 
 DATE_STRINGS = ["1900", "-1900", "1900-01", "1901-01-01", "foo"]
 DATE_TYPES = [
