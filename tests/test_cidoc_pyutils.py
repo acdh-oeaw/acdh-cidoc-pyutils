@@ -1,7 +1,8 @@
 import unittest
+from lxml.etree import Element
 from rdflib import Graph
 
-from acdh_cidoc_pyutils import date_to_literal, make_uri, create_e52, normalize_string
+from acdh_cidoc_pyutils import date_to_literal, make_uri, create_e52, normalize_string, extract_begin_end
 
 DATE_STRINGS = ["1900", "-1900", "1900-01", "1901-01-01", "foo"]
 DATE_TYPES = [
@@ -56,3 +57,40 @@ mein schatz ich liebe    dich
         """
         normalized = normalize_string(string)
         self.assertTrue("\n" not in normalized)
+
+    def test_006_begin_end(self):
+        date_string = "1900-12-12"
+        date_object = Element("hansi")
+        date_object.attrib["when-iso"] = date_string
+        begin, end = extract_begin_end(date_object)
+        self.assertTrue(begin, date_string)
+        self.assertTrue(end, date_string)
+
+        date_string = "1900-12-12"
+        date_object = Element("hansi")
+        date_object.attrib["when"] = date_string
+        begin, end = extract_begin_end(date_object)
+        self.assertTrue(begin, date_string)
+        self.assertTrue(end, date_string)
+
+        date_string = "1900-12-12"
+        date_object = Element("hansi")
+        date_object.attrib["notAfter"] = date_string
+        begin, end = extract_begin_end(date_object)
+        self.assertTrue(begin, date_string)
+        self.assertTrue(end, date_string)
+
+        date_string = "1900-12-12"
+        date_object = Element("hansi")
+        date_object.attrib["notBefore"] = date_string
+        begin, end = extract_begin_end(date_object)
+        self.assertTrue(begin, date_string)
+        self.assertTrue(end, date_string)
+
+        date_string = "1900-12-12"
+        date_object = Element("hansi")
+        date_object.attrib["notAfter"] = date_string
+        date_object.attrib["notBefore"] = "1800"
+        begin, end = extract_begin_end(date_object)
+        self.assertTrue(begin, "1800")
+        self.assertTrue(end, date_string)
