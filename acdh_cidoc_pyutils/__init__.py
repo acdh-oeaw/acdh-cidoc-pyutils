@@ -89,11 +89,11 @@ def make_appelations(
     else:
         return g
     for i, y in enumerate(node.xpath(xpath_expression, namespaces=NSMAP)):
-        if y.text:
-            try:
-                lang_tag = y.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
-            except KeyError:
-                lang_tag = default_lang
+        try:
+            lang_tag = y.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
+        except KeyError:
+            lang_tag = default_lang
+        if len(y.xpath('./*')) < 1 and y.text:
             app_uri = URIRef(f"{subj}/appelation/{i}")
             g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
             g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
@@ -103,6 +103,25 @@ def make_appelations(
             has_type = y.get(type_attribute)
             if has_type:
                 type_uri = URIRef(f"{type_domain}{slugify(has_type)}")
+                g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
+                g.add((type_uri, RDFS.label, Literal(has_type)))
+                g.add((app_uri, CIDOC["P2_has_type"], type_uri))
+        for c, child in enumerate(y.xpath('./*')):
+            try:
+                child_lang_tag = child.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
+            except KeyError:
+                child_lang_tag = lang_tag
+            tag_name = child.tag.split("}")[-1]
+            has_type = child.get(type_attribute)
+            app_uri = URIRef(f"{subj}/appelation/{i}/{c}")
+            g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
+            g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
+            g.add(
+                (app_uri, RDFS.label, Literal(normalize_string(child.text), lang=child_lang_tag))
+            )
+            has_type = child.get(type_attribute)
+            if has_type:
+                type_uri = URIRef(f"{type_domain}{tag_name}-{slugify(has_type)}")
                 g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
                 g.add((type_uri, RDFS.label, Literal(has_type)))
                 g.add((app_uri, CIDOC["P2_has_type"], type_uri))
