@@ -4,6 +4,7 @@ from typing import Union
 from lxml.etree import Element
 from rdflib import Graph, Literal, URIRef, XSD, RDF, RDFS
 from slugify import slugify
+from acdh_tei_pyutils.utils import make_entity_label
 from acdh_cidoc_pyutils.namespaces import CIDOC, NSMAP
 
 
@@ -125,4 +126,12 @@ def make_appelations(
                 g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
                 g.add((type_uri, RDFS.label, Literal(has_type)))
                 g.add((app_uri, CIDOC["P2_has_type"], type_uri))
+    try:
+        first_name_el = node.xpath(xpath_expression, namespaces=NSMAP)[0]
+    except IndexError:
+        return g
+    entity_label_str, cur_lang = make_entity_label(first_name_el, default_lang=default_lang)
+    g.add((
+        subj, RDFS.label, Literal(entity_label_str, lang=cur_lang)
+    ))
     return g

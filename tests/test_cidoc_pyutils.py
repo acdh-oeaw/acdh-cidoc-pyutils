@@ -66,6 +66,9 @@ sample = """
     <bibl xml:id="DWbible01113">
         <title>Hansi4ever</title>
     </bibl>
+    <person xml:id="hansi12343">
+        <test></test>
+    </person>
 </TEI>
 """
 
