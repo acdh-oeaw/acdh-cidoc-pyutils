@@ -17,6 +17,11 @@ from acdh_cidoc_pyutils.namespaces import NSMAP, CIDOC
 sample = """
 <TEI xmlns="http://www.tei-c.org/ns/1.0">
     <person xml:id="DWpers0091" sortKey="Gulbransson_Olaf_Leonhard">
+        <persName xml:lang="fr">
+            <forename>Olaf</forename>
+            <forename type="unused" xml:lang="bg">Leonhard</forename>
+            <surname>Gulbransson</surname>
+        </persName>
         <birth when="1873-05-26">26. 5. 1873<placeName key="#DWplace00139"
                 >Christiania (Oslo)</placeName></birth>
         <death when="1958-09-18">18. 9. 1958<placeName key="#DWplace00353"
@@ -61,6 +66,9 @@ sample = """
     <bibl xml:id="DWbible01113">
         <title>Hansi4ever</title>
     </bibl>
+    <person xml:id="hansi12343">
+        <test></test>
+    </person>
 </TEI>
 """
 
@@ -173,3 +181,5 @@ mein schatz ich liebe    dich
         self.assertTrue("@it" in data)
         self.assertTrue("P2_has_type <http://hansi/4/ever/orig-name>" in data)
         self.assertTrue('dfs:label "Gulbransson, Olaf"' in data)
+        self.assertTrue('Leonhard"@bg' in data)
+        self.assertTrue("forename-unused" in data)

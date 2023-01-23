@@ -1,1 +1,1 @@
-"""Unit test package for acdh_id_reconciler."""
+"""Unit test package for acdh_cidoc_pyutils."""
