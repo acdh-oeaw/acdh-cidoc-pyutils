@@ -80,7 +80,8 @@ def make_appelations(
     if not type_domain.endswith("/"):
         type_domain = f"{type_domain}/"
     g = Graph()
-    tag_name = node.tag
+    tag_name = node.tag.split('}')[-1]
+    base_type_uri = f"{type_domain}{tag_name}"
     if tag_name.endswith("place"):
         xpath_expression = ".//tei:placeName"
     elif tag_name.endswith("person"):
@@ -90,11 +91,11 @@ def make_appelations(
     else:
         return g
     for i, y in enumerate(node.xpath(xpath_expression, namespaces=NSMAP)):
-        name_tag = y.tag.split("}")[-1]
         try:
             lang_tag = y.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
         except KeyError:
             lang_tag = default_lang
+        type_uri = f"{base_type_uri}/{y.tag.split('}')[-1]}"
         if len(y.xpath("./*")) < 1 and y.text:
             app_uri = URIRef(f"{subj}/appelation/{i}")
             g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
@@ -102,21 +103,28 @@ def make_appelations(
             g.add(
                 (app_uri, RDFS.label, Literal(normalize_string(y.text), lang=lang_tag))
             )
-            has_type = y.get(type_attribute)
-            if has_type:
-                type_uri = URIRef(f"{type_domain}{slugify(has_type)}")
-                g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
-                g.add((type_uri, RDFS.label, Literal(has_type)))
-                g.add((app_uri, CIDOC["P2_has_type"], type_uri))
+            type_label = y.get(type_attribute)
+            if type_label:
+                cur_type_uri = URIRef(f"{type_uri}/{slugify(type_label)}".lower())
+            else:
+                cur_type_uri = URIRef(type_uri.lower())
+            g.add((cur_type_uri, RDF.type, CIDOC["E55_Type"]))
+            if type_label:
+                g.add((cur_type_uri, RDFS.label, Literal(type_label)))
+            g.add((app_uri, CIDOC["P2_has_type"], cur_type_uri))
         for c, child in enumerate(y.xpath("./*")):
+            cur_type_uri = f"{type_uri}/{child.tag.split('}')[-1]}".lower()
+            type_label = child.get(type_attribute)
+            if type_label:
+                cur_type_uri = URIRef(f"{cur_type_uri}/{slugify(type_label)}".lower())
+            else:
+                cur_type_uri = URIRef(cur_type_uri.lower())
             try:
                 child_lang_tag = child.attrib[
                     "{http://www.w3.org/XML/1998/namespace}lang"
                 ]
             except KeyError:
                 child_lang_tag = lang_tag
-            child_tag_name = child.tag.split("}")[-1]
-            has_type = child.get(type_attribute)
             app_uri = URIRef(f"{subj}/appelation/{i}/{c}")
             g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
             g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
@@ -127,18 +135,10 @@ def make_appelations(
                     Literal(normalize_string(child.text), lang=child_lang_tag),
                 )
             )
-            has_type = child.get(type_attribute)
-            if has_type:
-                type_uri = URIRef(
-                    f"{type_domain}{tag_name.split('}')[-1]}-{name_tag}-{child_tag_name}-{slugify(has_type)}"
-                )
-            else:
-                type_uri = URIRef(
-                    f"{type_domain}{tag_name.split('}')[-1]}-{name_tag}-{child_tag_name}"
-                )
-            g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
-            g.add((type_uri, RDFS.label, Literal(has_type)))
-            g.add((app_uri, CIDOC["P2_has_type"], type_uri))
+            g.add((cur_type_uri, RDF.type, CIDOC["E55_Type"]))
+            if type_label:
+                g.add((cur_type_uri, RDFS.label, Literal(type_label)))
+            g.add((app_uri, CIDOC["P2_has_type"], cur_type_uri))
     try:
         first_name_el = node.xpath(xpath_expression, namespaces=NSMAP)[0]
     except IndexError:
