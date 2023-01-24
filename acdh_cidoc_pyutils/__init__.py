@@ -170,4 +170,16 @@ def make_ed42_identifiers(
     g.add((app_uri, RDF.type, CIDOC["E42_Identifier"]))
     g.add((app_uri, RDFS.label, Literal(xml_id, lang=lang)))
     g.add((app_uri, CIDOC["P2_has_type"], type_uri))
+    for i, x in enumerate(node.xpath('.//tei:idno', namespaces=NSMAP)):
+        idno_type_base_uri = f"{type_domain}idno"
+        if x.text:
+            idno_uri = URIRef(f"{subj}/identifier/idno/{1}")
+            print(idno_uri)
+            g.add((subj, CIDOC["P1_is_identified_by"], idno_uri))
+            idno_type = x.get('type')
+            if idno_type:
+                idno_type_base_uri = f"{idno_type_base_uri}/idno_type"
+            idno_type = x.get('subtype')
+            if idno_type:
+                idno_type_base_uri = f"{idno_type_base_uri}/idno_type"
     return g
