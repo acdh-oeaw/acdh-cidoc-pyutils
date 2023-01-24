@@ -94,7 +94,7 @@ def make_appelations(
             lang_tag = y.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
         except KeyError:
             lang_tag = default_lang
-        if len(y.xpath('./*')) < 1 and y.text:
+        if len(y.xpath("./*")) < 1 and y.text:
             app_uri = URIRef(f"{subj}/appelation/{i}")
             g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
             g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
@@ -107,9 +107,11 @@ def make_appelations(
                 g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
                 g.add((type_uri, RDFS.label, Literal(has_type)))
                 g.add((app_uri, CIDOC["P2_has_type"], type_uri))
-        for c, child in enumerate(y.xpath('./*')):
+        for c, child in enumerate(y.xpath("./*")):
             try:
-                child_lang_tag = child.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
+                child_lang_tag = child.attrib[
+                    "{http://www.w3.org/XML/1998/namespace}lang"
+                ]
             except KeyError:
                 child_lang_tag = lang_tag
             tag_name = child.tag.split("}")[-1]
@@ -118,7 +120,11 @@ def make_appelations(
             g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
             g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
             g.add(
-                (app_uri, RDFS.label, Literal(normalize_string(child.text), lang=child_lang_tag))
+                (
+                    app_uri,
+                    RDFS.label,
+                    Literal(normalize_string(child.text), lang=child_lang_tag),
+                )
             )
             has_type = child.get(type_attribute)
             if has_type:
@@ -130,8 +136,8 @@ def make_appelations(
         first_name_el = node.xpath(xpath_expression, namespaces=NSMAP)[0]
     except IndexError:
         return g
-    entity_label_str, cur_lang = make_entity_label(first_name_el, default_lang=default_lang)
-    g.add((
-        subj, RDFS.label, Literal(entity_label_str, lang=cur_lang)
-    ))
+    entity_label_str, cur_lang = make_entity_label(
+        first_name_el, default_lang=default_lang
+    )
+    g.add((subj, RDFS.label, Literal(entity_label_str, lang=cur_lang)))
     return g
