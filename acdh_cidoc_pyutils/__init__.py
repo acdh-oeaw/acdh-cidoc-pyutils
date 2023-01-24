@@ -141,3 +141,34 @@ def make_appelations(
     )
     g.add((subj, RDFS.label, Literal(entity_label_str, lang=cur_lang)))
     return g
+
+
+def make_ed42_identifiers(
+    subj: URIRef,
+    node: Element,
+    type_domain="https://foo-bar/",
+    default_lang="de",
+) -> Graph:
+    g = Graph()
+    try:
+        lang = node.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
+    except KeyError:
+        lang = default_lang
+    xml_id = node.attrib["{http://www.w3.org/XML/1998/namespace}id"]
+    if not type_domain.endswith("/"):
+        type_domain = f"{type_domain}/"
+    app_uri = URIRef(f"{subj}/identifier/{xml_id}")
+    type_uri = URIRef(f"{type_domain}xml-id")
+    g.add((
+        subj, CIDOC["P1_is_identified_by"], app_uri
+    ))
+    g.add((
+        app_uri, RDF.type, CIDOC["E42_Identifier"]
+    ))
+    g.add((
+        app_uri, RDFS.label, Literal(xml_id, lang=lang)
+    ))
+    g.add((
+        app_uri, CIDOC["P2_has_type"], type_uri
+    ))
+    return g
