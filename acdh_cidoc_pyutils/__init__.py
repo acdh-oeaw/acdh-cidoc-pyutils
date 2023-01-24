@@ -90,6 +90,7 @@ def make_appelations(
     else:
         return g
     for i, y in enumerate(node.xpath(xpath_expression, namespaces=NSMAP)):
+        name_tag = y.tag.split("}")[-1]
         try:
             lang_tag = y.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
         except KeyError:
@@ -114,7 +115,7 @@ def make_appelations(
                 ]
             except KeyError:
                 child_lang_tag = lang_tag
-            tag_name = child.tag.split("}")[-1]
+            child_tag_name = child.tag.split("}")[-1]
             has_type = child.get(type_attribute)
             app_uri = URIRef(f"{subj}/appelation/{i}/{c}")
             g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
@@ -128,10 +129,16 @@ def make_appelations(
             )
             has_type = child.get(type_attribute)
             if has_type:
-                type_uri = URIRef(f"{type_domain}{tag_name}-{slugify(has_type)}")
-                g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
-                g.add((type_uri, RDFS.label, Literal(has_type)))
-                g.add((app_uri, CIDOC["P2_has_type"], type_uri))
+                type_uri = URIRef(
+                    f"{type_domain}{tag_name.split('}')[-1]}-{name_tag}-{child_tag_name}-{slugify(has_type)}"
+                )
+            else:
+                type_uri = URIRef(
+                    f"{type_domain}{tag_name.split('}')[-1]}-{name_tag}-{child_tag_name}"
+                )
+            g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
+            g.add((type_uri, RDFS.label, Literal(has_type)))
+            g.add((app_uri, CIDOC["P2_has_type"], type_uri))
     try:
         first_name_el = node.xpath(xpath_expression, namespaces=NSMAP)[0]
     except IndexError:
@@ -159,16 +166,8 @@ def make_ed42_identifiers(
         type_domain = f"{type_domain}/"
     app_uri = URIRef(f"{subj}/identifier/{xml_id}")
     type_uri = URIRef(f"{type_domain}xml-id")
-    g.add((
-        subj, CIDOC["P1_is_identified_by"], app_uri
-    ))
-    g.add((
-        app_uri, RDF.type, CIDOC["E42_Identifier"]
-    ))
-    g.add((
-        app_uri, RDFS.label, Literal(xml_id, lang=lang)
-    ))
-    g.add((
-        app_uri, CIDOC["P2_has_type"], type_uri
-    ))
+    g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
+    g.add((app_uri, RDF.type, CIDOC["E42_Identifier"]))
+    g.add((app_uri, RDFS.label, Literal(xml_id, lang=lang)))
+    g.add((app_uri, CIDOC["P2_has_type"], type_uri))
     return g
