@@ -11,6 +11,7 @@ from acdh_cidoc_pyutils import (
     normalize_string,
     extract_begin_end,
     make_appelations,
+    make_ed42_identifiers,
 )
 from acdh_cidoc_pyutils.namespaces import NSMAP, CIDOC
 
@@ -38,6 +39,8 @@ sample = """
         <placeName xml:lang="de" type="simple_name">Reval</placeName>
         <placeName xml:lang="und" type="alt_label">Tallinn</placeName>
         <idno type="pmb">https://pmb.acdh.oeaw.ac.at/entity/42085/</idno>
+        <idno type="URI" subtype="geonames">https://www.geonames.org/588409</idno>
+        <idno subtype="foobarid">12345</idno>
     </place>
     <place xml:id="DWplace00010">
         <placeName xml:lang="de" type="orig_name">Jaworzno</placeName>
@@ -167,7 +170,9 @@ mein schatz ich liebe    dich
     def test_007_make_appelations(self):
         g = Graph()
         doc = ET.fromstring(sample)
-        for x in doc.xpath(".//tei:place|tei:org|tei:person|tei:bibl", namespaces=NSMAP):
+        for x in doc.xpath(
+            ".//tei:place|tei:org|tei:person|tei:bibl", namespaces=NSMAP
+        ):
             xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
             item_id = f"https://foo/bar/{xml_id}"
             subj = URIRef(item_id)
@@ -176,10 +181,43 @@ mein schatz ich liebe    dich
                 subj, x, type_domain="http://hansi/4/ever", default_lang="it"
             )
         data = g.serialize(format="turtle")
-        g.serialize("test.ttl", format="turtle")
+        # g.serialize("test.ttl", format="turtle")
         self.assertTrue('rdfs:label "Stahlhelm, Bund der Frontsoldaten"@de' in data)
         self.assertTrue("@it" in data)
-        self.assertTrue("P2_has_type <http://hansi/4/ever/orig-name>" in data)
+        self.assertTrue(
+            "P2_has_type <http://hansi/4/ever/person/persname/forename/unused>" in data
+        )
         self.assertTrue('dfs:label "Gulbransson, Olaf"' in data)
         self.assertTrue('Leonhard"@bg' in data)
-        self.assertTrue("forename-unused" in data)
+        self.assertTrue("person/persname/forename/unused" in data)
+
+    def test_008_make_ed42_identifiers(self):
+        g = Graph()
+        doc = ET.fromstring(sample)
+        for x in doc.xpath(".//tei:org|tei:place", namespaces=NSMAP):
+            xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
+            item_id = f"https://foo/bar/{xml_id}"
+            subj = URIRef(item_id)
+            g.add((subj, RDF.type, CIDOC["hansi"]))
+            g += make_ed42_identifiers(
+                subj, x, type_domain="http://hansi/4/ever", default_lang="it"
+            )
+            data = g.serialize(format="turtle")
+        g = Graph()
+        for x in doc.xpath(".//tei:org|tei:place", namespaces=NSMAP):
+            xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
+            item_id = f"https://foo/bar/{xml_id}"
+            subj = URIRef(item_id)
+            g.add((subj, RDF.type, CIDOC["hansi"]))
+            g += make_ed42_identifiers(
+                subj,
+                x,
+                type_domain="http://hansi/4/ever",
+                default_lang="it",
+                set_lang=True,
+            )
+            data = g.serialize(format="turtle")
+            self.assertTrue("@it" in data)
+            self.assertTrue("idno/foobarid" in data)
+            self.assertTrue("owl:sameAs <https://" in data)
+            g.serialize("ids.ttl", format="turtle")

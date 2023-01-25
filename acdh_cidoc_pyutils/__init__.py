@@ -2,7 +2,7 @@ import uuid
 from typing import Union
 
 from lxml.etree import Element
-from rdflib import Graph, Literal, URIRef, XSD, RDF, RDFS
+from rdflib import Graph, Literal, URIRef, XSD, RDF, RDFS, OWL
 from slugify import slugify
 from acdh_tei_pyutils.utils import make_entity_label
 from acdh_cidoc_pyutils.namespaces import CIDOC, NSMAP
@@ -80,7 +80,8 @@ def make_appelations(
     if not type_domain.endswith("/"):
         type_domain = f"{type_domain}/"
     g = Graph()
-    tag_name = node.tag
+    tag_name = node.tag.split("}")[-1]
+    base_type_uri = f"{type_domain}{tag_name}"
     if tag_name.endswith("place"):
         xpath_expression = ".//tei:placeName"
     elif tag_name.endswith("person"):
@@ -94,44 +95,110 @@ def make_appelations(
             lang_tag = y.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
         except KeyError:
             lang_tag = default_lang
-        if len(y.xpath('./*')) < 1 and y.text:
+        type_uri = f"{base_type_uri}/{y.tag.split('}')[-1]}"
+        if len(y.xpath("./*")) < 1 and y.text:
             app_uri = URIRef(f"{subj}/appelation/{i}")
             g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
             g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
             g.add(
                 (app_uri, RDFS.label, Literal(normalize_string(y.text), lang=lang_tag))
             )
-            has_type = y.get(type_attribute)
-            if has_type:
-                type_uri = URIRef(f"{type_domain}{slugify(has_type)}")
-                g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
-                g.add((type_uri, RDFS.label, Literal(has_type)))
-                g.add((app_uri, CIDOC["P2_has_type"], type_uri))
-        for c, child in enumerate(y.xpath('./*')):
+            type_label = y.get(type_attribute)
+            if type_label:
+                cur_type_uri = URIRef(f"{type_uri}/{slugify(type_label)}".lower())
+            else:
+                cur_type_uri = URIRef(type_uri.lower())
+            g.add((cur_type_uri, RDF.type, CIDOC["E55_Type"]))
+            if type_label:
+                g.add((cur_type_uri, RDFS.label, Literal(type_label)))
+            g.add((app_uri, CIDOC["P2_has_type"], cur_type_uri))
+        for c, child in enumerate(y.xpath("./*")):
+            cur_type_uri = f"{type_uri}/{child.tag.split('}')[-1]}".lower()
+            type_label = child.get(type_attribute)
+            if type_label:
+                cur_type_uri = URIRef(f"{cur_type_uri}/{slugify(type_label)}".lower())
+            else:
+                cur_type_uri = URIRef(cur_type_uri.lower())
             try:
-                child_lang_tag = child.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
+                child_lang_tag = child.attrib[
+                    "{http://www.w3.org/XML/1998/namespace}lang"
+                ]
             except KeyError:
                 child_lang_tag = lang_tag
-            tag_name = child.tag.split("}")[-1]
-            has_type = child.get(type_attribute)
             app_uri = URIRef(f"{subj}/appelation/{i}/{c}")
             g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
             g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
             g.add(
-                (app_uri, RDFS.label, Literal(normalize_string(child.text), lang=child_lang_tag))
+                (
+                    app_uri,
+                    RDFS.label,
+                    Literal(normalize_string(child.text), lang=child_lang_tag),
+                )
             )
-            has_type = child.get(type_attribute)
-            if has_type:
-                type_uri = URIRef(f"{type_domain}{tag_name}-{slugify(has_type)}")
-                g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
-                g.add((type_uri, RDFS.label, Literal(has_type)))
-                g.add((app_uri, CIDOC["P2_has_type"], type_uri))
+            g.add((cur_type_uri, RDF.type, CIDOC["E55_Type"]))
+            if type_label:
+                g.add((cur_type_uri, RDFS.label, Literal(type_label)))
+            g.add((app_uri, CIDOC["P2_has_type"], cur_type_uri))
     try:
         first_name_el = node.xpath(xpath_expression, namespaces=NSMAP)[0]
     except IndexError:
         return g
-    entity_label_str, cur_lang = make_entity_label(first_name_el, default_lang=default_lang)
-    g.add((
-        subj, RDFS.label, Literal(entity_label_str, lang=cur_lang)
-    ))
+    entity_label_str, cur_lang = make_entity_label(
+        first_name_el, default_lang=default_lang
+    )
+    g.add((subj, RDFS.label, Literal(entity_label_str, lang=cur_lang)))
+    return g
+
+
+def make_ed42_identifiers(
+    subj: URIRef,
+    node: Element,
+    type_domain="https://foo-bar/",
+    default_lang="de",
+    set_lang=False,
+) -> Graph:
+    g = Graph()
+    try:
+        lang = node.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
+    except KeyError:
+        lang = default_lang
+    if set_lang:
+        pass
+    else:
+        lang = "und"
+    xml_id = node.attrib["{http://www.w3.org/XML/1998/namespace}id"]
+    if not type_domain.endswith("/"):
+        type_domain = f"{type_domain}/"
+    app_uri = URIRef(f"{subj}/identifier/{xml_id}")
+    type_uri = URIRef(f"{type_domain}xml-id")
+    g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
+    g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
+    g.add((app_uri, RDF.type, CIDOC["E42_Identifier"]))
+    g.add((app_uri, RDFS.label, Literal(xml_id, lang=lang)))
+    g.add((app_uri, CIDOC["P2_has_type"], type_uri))
+    for i, x in enumerate(node.xpath(".//tei:idno", namespaces=NSMAP)):
+        idno_type_base_uri = f"{type_domain}idno"
+        if x.text:
+            idno_uri = URIRef(f"{subj}/identifier/idno/{i}")
+            g.add((subj, CIDOC["P1_is_identified_by"], idno_uri))
+            idno_type = x.get("type")
+            if idno_type:
+                idno_type_base_uri = f"{idno_type_base_uri}/{idno_type}"
+            idno_type = x.get("subtype")
+            if idno_type:
+                idno_type_base_uri = f"{idno_type_base_uri}/{idno_type}"
+            g.add((idno_uri, RDF.type, CIDOC["E42_Identifier"]))
+            g.add((idno_uri, CIDOC["P2_has_type"], URIRef(idno_type_base_uri)))
+            g.add((URIRef(idno_type_base_uri), RDF.type, CIDOC["E55_Type"]))
+            g.add((idno_uri, RDFS.label, Literal(x.text, lang=lang)))
+            if x.text.startswith("http"):
+                g.add(
+                    (
+                        subj,
+                        OWL.sameAs,
+                        URIRef(
+                            x.text,
+                        ),
+                    )
+                )
     return g

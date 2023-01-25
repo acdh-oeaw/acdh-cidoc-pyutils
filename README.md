@@ -66,6 +66,76 @@ print(e52.serialize())
 #     ns1:P82a_begin_of_the_begin "1800-12-12"^^xsd:date ;
 #     ns1:P82b_end_of_the_end "1900-01"^^xsd:gYearMonth .
 ```
+### creates E42 from tei:org|place|person
+
+takes a tei:person|place|org node, extracts their `@xml:id` and all `tei:idno` elements, derives `idoc:E42_Identifier` triples and relates them to a passed in subject via `cidoc:P1_is_identified_by`
+
+```python
+import lxml.etree as ET
+from rdflib import Graph, URIRef, RDF
+from acdh_cidoc_pyutils import make_ed42_identifiers, NSMAP, CIDOC
+sample = """
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <place xml:id="DWplace00092">
+        <placeName type="orig_name">Reval (Tallinn)</placeName>
+        <placeName xml:lang="de" type="simple_name">Reval</placeName>
+        <placeName xml:lang="und" type="alt_label">Tallinn</placeName>
+        <idno type="pmb">https://pmb.acdh.oeaw.ac.at/entity/42085/</idno>
+        <idno type="URI" subtype="geonames">https://www.geonames.org/588409</idno>
+        <idno subtype="foobarid">12345</idno>
+    </place>
+</TEI>"""
+
+doc = ET.fromstring(sample)
+g = Graph()
+for x in doc.xpath(".//tei:place|tei:org|tei:person|tei:bibl", namespaces=NSMAP):
+    xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
+    item_id = f"https://foo/bar/{xml_id}"
+    subj = URIRef(item_id)
+    g.add((subj, RDF.type, CIDOC["E53_Place"]))
+    g += make_ed42_identifiers(
+        subj, x, type_domain="http://hansi/4/ever", default_lang="it"
+    )
+print(g.serialize(format="turtle"))
+# returns
+```
+```rdf
+@prefix ns1: <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<https://foo/bar/dwplace00092> a ns1:E53_Place ;
+    ns1:P1_is_identified_by <https://foo/bar/dwplace00092/identifier/DWplace00092>,
+        <https://foo/bar/dwplace00092/identifier/idno/0>,
+        <https://foo/bar/dwplace00092/identifier/idno/1>,
+        <https://foo/bar/dwplace00092/identifier/idno/2> ;
+    owl:sameAs <https://pmb.acdh.oeaw.ac.at/entity/42085/>,
+        <https://www.geonames.org/588409> .
+
+<http://hansi/4/ever/idno/URI/geonames> a ns1:E55_Type .
+
+<http://hansi/4/ever/idno/foobarid> a ns1:E55_Type .
+
+<http://hansi/4/ever/idno/pmb> a ns1:E55_Type .
+
+<http://hansi/4/ever/xml-id> a ns1:E55_Type .
+
+<https://foo/bar/dwplace00092/identifier/DWplace00092> a ns1:E42_Identifier ;
+    rdfs:label "DWplace00092"@it ;
+    ns1:P2_has_type <http://hansi/4/ever/xml-id> .
+
+<https://foo/bar/dwplace00092/identifier/idno/0> a ns1:E42_Identifier ;
+    rdfs:label "https://pmb.acdh.oeaw.ac.at/entity/42085/"@it ;
+    ns1:P2_has_type <http://hansi/4/ever/idno/pmb> .
+
+<https://foo/bar/dwplace00092/identifier/idno/1> a ns1:E42_Identifier ;
+    rdfs:label "https://www.geonames.org/588409"@it ;
+    ns1:P2_has_type <http://hansi/4/ever/idno/URI/geonames> .
+
+<https://foo/bar/dwplace00092/identifier/idno/2> a ns1:E42_Identifier ;
+    rdfs:label "12345"@it ;
+    ns1:P2_has_type <http://hansi/4/ever/idno/foobarid> .
+```
 
 ### creates appelations from tei:org|place|person
 
@@ -73,8 +143,8 @@ takes a tei:person|place|org node, extracts `persName, placeName and orgName` te
 
 ```python
 import lxml.etree as ET
-from rdflib import URIRef
-from acdh_cidoc_pyutils import make_appelations
+from rdflib import Graph, URIRef, RDF
+from acdh_cidoc_pyutils import make_appelations, NSMAP, CIDOC
 
 sample = """
 <TEI xmlns="http://www.tei-c.org/ns/1.0">
