@@ -80,7 +80,7 @@ def make_appelations(
     if not type_domain.endswith("/"):
         type_domain = f"{type_domain}/"
     g = Graph()
-    tag_name = node.tag.split('}')[-1]
+    tag_name = node.tag.split("}")[-1]
     base_type_uri = f"{type_domain}{tag_name}"
     if tag_name.endswith("place"):
         xpath_expression = ".//tei:placeName"
@@ -155,7 +155,7 @@ def make_ed42_identifiers(
     node: Element,
     type_domain="https://foo-bar/",
     default_lang="de",
-    set_lang=False
+    set_lang=False,
 ) -> Graph:
     g = Graph()
     try:
@@ -171,32 +171,34 @@ def make_ed42_identifiers(
         type_domain = f"{type_domain}/"
     app_uri = URIRef(f"{subj}/identifier/{xml_id}")
     type_uri = URIRef(f"{type_domain}xml-id")
+    g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
     g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
     g.add((app_uri, RDF.type, CIDOC["E42_Identifier"]))
     g.add((app_uri, RDFS.label, Literal(xml_id, lang=lang)))
     g.add((app_uri, CIDOC["P2_has_type"], type_uri))
-    for i, x in enumerate(node.xpath('.//tei:idno', namespaces=NSMAP)):
+    for i, x in enumerate(node.xpath(".//tei:idno", namespaces=NSMAP)):
         idno_type_base_uri = f"{type_domain}idno"
         if x.text:
             idno_uri = URIRef(f"{subj}/identifier/idno/{i}")
             g.add((subj, CIDOC["P1_is_identified_by"], idno_uri))
-            idno_type = x.get('type')
+            idno_type = x.get("type")
             if idno_type:
                 idno_type_base_uri = f"{idno_type_base_uri}/{idno_type}"
-            idno_type = x.get('subtype')
+            idno_type = x.get("subtype")
             if idno_type:
                 idno_type_base_uri = f"{idno_type_base_uri}/{idno_type}"
-            g.add((
-                idno_uri, RDF.type, CIDOC["E42_Identifier"]
-            ))
-            g.add((
-                idno_uri, CIDOC["P2_has_type"], URIRef(idno_type_base_uri)
-            ))
-            g.add((
-                idno_uri, RDFS.label, Literal(x.text, lang=lang)
-            ))
-            if x.text.startswith('http'):
-                g.add((
-                    subj, OWL.sameAs, URIRef(x.text,)
-                ))
+            g.add((idno_uri, RDF.type, CIDOC["E42_Identifier"]))
+            g.add((idno_uri, CIDOC["P2_has_type"], URIRef(idno_type_base_uri)))
+            g.add((URIRef(idno_type_base_uri), RDF.type, CIDOC["E55_Type"]))
+            g.add((idno_uri, RDFS.label, Literal(x.text, lang=lang)))
+            if x.text.startswith("http"):
+                g.add(
+                    (
+                        subj,
+                        OWL.sameAs,
+                        URIRef(
+                            x.text,
+                        ),
+                    )
+                )
     return g

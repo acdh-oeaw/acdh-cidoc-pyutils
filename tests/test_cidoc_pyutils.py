@@ -220,4 +220,4 @@ mein schatz ich liebe    dich
             self.assertTrue("@it" in data)
             self.assertTrue("idno/foobarid" in data)
             self.assertTrue("owl:sameAs <https://" in data)
-            # g.serialize("ids.ttl", format="turtle")
+            g.serialize("ids.ttl", format="turtle")
