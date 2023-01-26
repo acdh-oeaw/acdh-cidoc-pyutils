@@ -12,6 +12,39 @@ def normalize_string(string: str) -> str:
     return " ".join(" ".join(string.split()).split())
 
 
+def coordinates_to_p168(
+    subj: URIRef,
+    node: Element,
+    coords_xpath=".//tei:geo[1]",
+    separator=" ",
+    inverse=False,
+    verbose=False,
+) -> Graph:
+    g = Graph()
+    try:
+        coords = node.xpath(coords_xpath, namespaces=NSMAP)[0]
+    except IndexError as e:
+        if verbose:
+            print(e, subj)
+        return g
+    try:
+        lat, lng = coords.text.split(separator)
+    except (ValueError, AttributeError) as e:
+        if verbose:
+            print(e, subj)
+        return g
+    if inverse:
+        lat, lng = lng, lat
+    g.set(
+        (
+            subj,
+            CIDOC["P168_place_is_defined_by"],
+            Literal(f"Point({lng} {lat})", datatype="geo:wktLiteral"),
+        )
+    )
+    return g
+
+
 def extract_begin_end(date_object: Union[Element, dict]) -> tuple[str, str]:
     begin, end = "", ""
     if date_object.get("when-iso", "") != "":
