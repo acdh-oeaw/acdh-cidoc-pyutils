@@ -235,3 +235,40 @@ def make_ed42_identifiers(
                     )
                 )
     return g
+
+
+def make_birth_death_entities(
+    subj: URIRef,
+    node: Element,
+    event_type="birth",
+    verbose=False,
+    default_prefix="Geburt von",
+    default_lang="de",
+):
+    g = Graph()
+    name_node = node.xpath(".//tei:persName[1]", namespaces=NSMAP)[0]
+    label, label_lang = make_entity_label(name_node, default_lang=default_lang)
+    if event_type not in ["birth", "death"]:
+        return (g, None, None)
+    if event_type == "birth":
+        cidoc_property = CIDOC["P98_brought_into_life"]
+        cidoc_class = CIDOC["E67_Birth"]
+    else:
+        cidoc_property = CIDOC["P100_was_death_of"]
+        cidoc_class = CIDOC["E69_Death"]
+    xpath_expr = f".//tei:{event_type}[1]"
+    try:
+        node.xpath(xpath_expr, namespaces=NSMAP)[0]
+    except IndexError as e:
+        if verbose:
+            print(subj, e)
+            return (g, None, None)
+    event_uri = URIRef(f"{subj}/{event_type}")
+    time_stamp_uri = URIRef(f"{event_uri}/timestamp")
+    g.set((event_uri, cidoc_property, subj))
+    g.set((event_uri, RDF.type, cidoc_class))
+    g.add(
+        (event_uri, RDFS.label, Literal(f"{default_prefix} {label}", lang=label_lang))
+    )
+    g.set((event_uri, CIDOC["P4_has_time-span"], time_stamp_uri))
+    return (g, event_uri, time_stamp_uri)

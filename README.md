@@ -4,11 +4,60 @@
 [![PyPI version](https://badge.fury.io/py/acdh-cidoc-pyutils.svg)](https://badge.fury.io/py/acdh-cidoc-pyutils)
 
 # acdh-cidoc-pyutils
-Helper functions for the generation of CIDOC CRMish RDF
+Helper functions for the generation of CIDOC CRMish RDF (from XML/TEI data)
 
-## Usage
+## Installation
 
 * install via `pip install acdh-cidoc-pyutils`
+
+## Examples
+
+### extract birth/death triples from `tei:person`
+
+```python
+import lxml.etree as ET
+from rdflib import URIRef
+from acdh_cidoc_pyutils import make_birth_death_entities, NSMAP
+
+sample = """
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <person xml:id="DWpers0091" sortKey="Gulbransson_Olaf_Leonhard">
+        <persName type="pref">Gulbransson, Olaf</persName>
+        <birth when="1873-05-26">
+            26. 5. 1873<placeName key="#DWplace00139">Christiania (Oslo)</placeName>
+        </birth>
+        <death>
+            <date when-iso="1905-07-04">04.07.1905</date>
+            <settlement key="pmb50">
+                <placeName type="pref">Wien</placeName>
+                <location><geo>48.2066 16.37341</geo></location>
+            </settlement>
+        </death>
+        
+    </person>
+</TEI>"""
+
+doc = ET.fromstring(sample)
+x = doc.xpath(".//tei:person[1]", namespaces=NSMAP)[0]
+xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
+item_id = f"https://foo/bar/{xml_id}"
+subj = URIRef(item_id)
+event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
+    subj, x, event_type="death", verbose=True
+)
+event_graph.serialize(format="turtle")
+# returns
+```
+```ttl
+@prefix ns1: <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<https://foo/bar/dwpers0091/death> a ns1:E69_Death ;
+    rdfs:label "Geburt von Gulbransson, Olaf Leonhard"@fr ;
+    ns1:P100_was_death_of <https://foo/bar/dwpers0091> ;
+    ns1:P4_has_time-span <https://foo/bar/dwpers0091/death/timestamp> .
+```
+
 
 ### create `ns1:P168_place_is_defined_by "Point(456 123)"^^<geo:wktLiteral> .` from tei:coords
 ```python
@@ -34,7 +83,7 @@ for x in doc.xpath(".//tei:place", namespaces=NSMAP):
 print(g.serialize())
 # returns
 ```
-```rdf
+```ttl
 ...
     ns1:P168_place_is_defined_by "Point(456 123)"^^<geo:wktLiteral> .
 ...
@@ -133,7 +182,7 @@ for x in doc.xpath(".//tei:place|tei:org|tei:person|tei:bibl", namespaces=NSMAP)
 print(g.serialize(format="turtle"))
 # returns
 ```
-```rdf
+```ttl
 @prefix ns1: <http://www.cidoc-crm.org/cidoc-crm/> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -204,7 +253,7 @@ for x in doc.xpath(".//tei:place|tei:org|tei:person|tei:bibl", namespaces=NSMAP)
 g.serialize(format="ttl")
 # returns
 ```
-```rdf
+```ttl
 @prefix ns1: <http://www.cidoc-crm.org/cidoc-crm/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
