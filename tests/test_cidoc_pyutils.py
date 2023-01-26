@@ -12,7 +12,8 @@ from acdh_cidoc_pyutils import (
     extract_begin_end,
     make_appelations,
     make_ed42_identifiers,
-    coordinates_to_p168
+    coordinates_to_p168,
+    make_birth_death_entities,
 )
 from acdh_cidoc_pyutils.namespaces import NSMAP, CIDOC
 
@@ -26,8 +27,13 @@ sample = """
         </persName>
         <birth when="1873-05-26">26. 5. 1873<placeName key="#DWplace00139"
                 >Christiania (Oslo)</placeName></birth>
-        <death when="1958-09-18">18. 9. 1958<placeName key="#DWplace00353"
-                >Tegernsee</placeName></death>
+        <death>
+            <date when-iso="1905-07-04">04.07.1905</date>
+            <settlement key="pmb50">
+                <placeName type="pref">Wien</placeName>
+                <location><geo>48.2066 16.37341</geo></location>
+            </settlement>
+        </death>
         <persName type="pref">Gulbransson, Olaf</persName>
         <persName type="full">Gulbransson, Olaf Leonhard</persName>
         <occupation type="prim" n="01">Zeichner und Maler</occupation>
@@ -248,3 +254,13 @@ mein schatz ich liebe    dich
         data = g.serialize(format="turtle")
         self.assertTrue("Point(123 456)" in data)
         g.serialize("coords1.ttl", format="turtle")
+
+    def test_010_birth_death(self):
+        doc = ET.fromstring(sample)
+        x = doc.xpath('.//tei:person[1]', namespaces=NSMAP)[0]
+        xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
+        item_id = f"https://foo/bar/{xml_id}"
+        subj = URIRef(item_id)
+        birth_g, birth_uri, birth_timestamp = make_birth_death_entities(subj, x, event_type="birth", verbose=False)
+        birth_g, birth_uri, birth_timestamp = make_birth_death_entities(subj, x, event_type="hansi4ever", verbose=True)
+        birth_g, birth_uri, birth_timestamp = make_birth_death_entities(subj, x, event_type="death", verbose=True)
