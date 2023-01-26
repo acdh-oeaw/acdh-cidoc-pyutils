@@ -257,10 +257,27 @@ mein schatz ich liebe    dich
 
     def test_010_birth_death(self):
         doc = ET.fromstring(sample)
-        x = doc.xpath('.//tei:person[1]', namespaces=NSMAP)[0]
+        x = doc.xpath(".//tei:person[1]", namespaces=NSMAP)[0]
         xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
         item_id = f"https://foo/bar/{xml_id}"
         subj = URIRef(item_id)
-        birth_g, birth_uri, birth_timestamp = make_birth_death_entities(subj, x, event_type="birth", verbose=False)
-        birth_g, birth_uri, birth_timestamp = make_birth_death_entities(subj, x, event_type="hansi4ever", verbose=True)
-        birth_g, birth_uri, birth_timestamp = make_birth_death_entities(subj, x, event_type="death", verbose=True)
+        event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
+            subj, x, event_type="birth", verbose=False
+        )
+        self.assertTrue(isinstance(event_graph, Graph))
+        for uri in [birth_uri, birth_timestamp]:
+            self.assertTrue(isinstance(uri, URIRef))
+        event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
+            subj, x, event_type="hansi4ever", verbose=True
+        )
+        for uri in [birth_uri, birth_timestamp]:
+            self.assertTrue((uri, None))
+        event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
+            subj, x, event_type="death", verbose=True
+        )
+        event_graph.serialize("death.ttl")
+        for bad in x.xpath(".//tei:death", namespaces=NSMAP):
+            bad.getparent().remove(bad)
+        event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
+            subj, x, event_type="death", verbose=True
+        )
