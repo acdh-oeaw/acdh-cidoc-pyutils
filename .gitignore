@@ -133,3 +133,5 @@ dmypy.json
 *.ipynb
 test.ttl
 ids.ttl
+coords.ttl
+coords1.ttl

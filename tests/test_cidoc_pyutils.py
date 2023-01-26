@@ -12,6 +12,7 @@ from acdh_cidoc_pyutils import (
     extract_begin_end,
     make_appelations,
     make_ed42_identifiers,
+    coordinates_to_p168
 )
 from acdh_cidoc_pyutils.namespaces import NSMAP, CIDOC
 
@@ -41,10 +42,12 @@ sample = """
         <idno type="pmb">https://pmb.acdh.oeaw.ac.at/entity/42085/</idno>
         <idno type="URI" subtype="geonames">https://www.geonames.org/588409</idno>
         <idno subtype="foobarid">12345</idno>
+        <location><geo>123 456</geo></location>
     </place>
     <place xml:id="DWplace00010">
         <placeName xml:lang="de" type="orig_name">Jaworzno</placeName>
         <idno type="pmb">https://pmb.acdh.oeaw.ac.at/entity/94280/</idno>
+        <location><geo>123 456 789</geo></location>
     </place>
     <org xml:id="DWorg00001">
         <orgName xml:lang="de" type="orig_name">Stahlhelm</orgName>
@@ -221,3 +224,27 @@ mein schatz ich liebe    dich
             self.assertTrue("idno/foobarid" in data)
             self.assertTrue("owl:sameAs <https://" in data)
             g.serialize("ids.ttl", format="turtle")
+
+    def test_009_coordinates(self):
+        doc = ET.fromstring(sample)
+        g = Graph()
+        for x in doc.xpath(".//tei:place", namespaces=NSMAP):
+            xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
+            item_id = f"https://foo/bar/{xml_id}"
+            subj = URIRef(item_id)
+            g.add((subj, RDF.type, CIDOC["hansi"]))
+            g += coordinates_to_p168(subj, x)
+        data = g.serialize(format="turtle")
+        self.assertTrue("Point(456 123)" in data)
+        g.serialize("coords.ttl", format="turtle")
+
+        g = Graph()
+        for x in doc.xpath(".//tei:place", namespaces=NSMAP):
+            xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
+            item_id = f"https://foo/bar/{xml_id}"
+            subj = URIRef(item_id)
+            g.add((subj, RDF.type, CIDOC["hansi"]))
+            g += coordinates_to_p168(subj, x, inverse=True, verbose=True)
+        data = g.serialize(format="turtle")
+        self.assertTrue("Point(123 456)" in data)
+        g.serialize("coords1.ttl", format="turtle")

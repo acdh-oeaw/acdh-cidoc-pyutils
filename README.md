@@ -10,6 +10,40 @@ Helper functions for the generation of CIDOC CRMish RDF
 
 * install via `pip install acdh-cidoc-pyutils`
 
+### create `ns1:P168_place_is_defined_by "Point(456 123)"^^<geo:wktLiteral> .` from tei:coords
+```python
+import lxml.etree as ET
+from rdflib import Graph, URIRef, RDF
+from acdh_cidoc_pyutils import coordinates_to_p168, NSMAP, CIDOC
+sample = """
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <place xml:id="DWplace00092">
+        <placeName type="orig_name">Reval (Tallinn)</placeName>
+        <location><geo>123 456</geo></location>
+    </place>
+</TEI>"""
+
+doc = ET.fromstring(sample)
+g = Graph()
+for x in doc.xpath(".//tei:place", namespaces=NSMAP):
+    xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
+    item_id = f"https://foo/bar/{xml_id}"
+    subj = URIRef(item_id)
+    g.add((subj, RDF.type, CIDOC["E53_Place"]))
+    g += coordinates_to_p168(subj, x)
+print(g.serialize())
+# returns
+```
+```rdf
+...
+    ns1:P168_place_is_defined_by "Point(456 123)"^^<geo:wktLiteral> .
+...
+```
+* Function parameter `verbose` prints information in case the given xpath does not return expected results which is a text node with two numbers separated by a given separator (default value is `separator=" "`)
+* Function parameter `inverse` (default: `inverse=False`) changes the order of the coordinates.
+
+
+
 ### date-like-string to casted rdflib.Literal
 
 ```python
