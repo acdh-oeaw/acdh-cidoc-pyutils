@@ -262,11 +262,13 @@ def make_ed42_identifiers(
 def make_birth_death_entities(
     subj: URIRef,
     node: Element,
+    domain: str,
     event_type="birth",
     verbose=False,
     default_prefix="Geburt von",
     default_lang="de",
-    date_node_xpath=""
+    date_node_xpath="",
+    place_id_xpath="//tei:placeName/@key",
 ):
     g = Graph()
     name_node = node.xpath(".//tei:persName[1]", namespaces=NSMAP)[0]
@@ -280,6 +282,7 @@ def make_birth_death_entities(
         cidoc_property = CIDOC["P100_was_death_of"]
         cidoc_class = CIDOC["E69_Death"]
     xpath_expr = f".//tei:{event_type}[1]"
+    place_xpath = f"{xpath_expr}{place_id_xpath}"
     if date_node_xpath != "":
         date_xpath = f"{xpath_expr}/{date_node_xpath}"
     else:
@@ -300,13 +303,23 @@ def make_birth_death_entities(
     g.set((event_uri, CIDOC["P4_has_time-span"], time_stamp_uri))
     try:
         date_node = node.xpath(date_xpath, namespaces=NSMAP)[0]
-        date_item = True
+        process_date = True
     except IndexError:
-        date_item = False
-    if date_item:
+        process_date = False
+    if process_date:
         start, end = extract_begin_end(date_node)
         try:
             g += create_e52(time_stamp_uri, begin_of_begin=start, end_of_end=end)
         except TypeError:
             pass
+    try:
+        place_node = node.xpath(place_xpath, namespaces=NSMAP)[0]
+        process_place = True
+    except IndexError:
+        process_place = False
+    if process_place:
+        if place_node.startswith("#"):
+            place_node = place_node[1:]
+        place_uri = URIRef(f"{domain}{place_node}")
+        g.add((event_uri, CIDOC["P7_took_place_at"], place_uri))
     return (g, event_uri, time_stamp_uri)

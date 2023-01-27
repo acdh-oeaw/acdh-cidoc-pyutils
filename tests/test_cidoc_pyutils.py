@@ -286,30 +286,41 @@ mein schatz ich liebe    dich
         item_id = f"https://foo/bar/{xml_id}"
         subj = URIRef(item_id)
         event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
-            subj, x, verbose=False
+            subj, x, domain="https://foo/bar/", verbose=False
         )
         event_graph.serialize("birth.ttl")
         self.assertTrue(isinstance(event_graph, Graph))
         for uri in [birth_uri, birth_timestamp]:
             self.assertTrue(isinstance(uri, URIRef))
         event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
-            subj, x, event_type="hansi4ever", verbose=True
+            subj, x, domain="https://foo/bar/", event_type="hansi4ever", verbose=True
         )
         for uri in [birth_uri, birth_timestamp]:
             self.assertTrue((uri, None))
         event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
-            subj, x, event_type="death", verbose=True, date_node_xpath="/tei:date[1]"
+            subj,
+            x,
+            domain="https://foo/bar/",
+            event_type="death",
+            verbose=True,
+            date_node_xpath="/tei:date[1]",
+            place_id_xpath="//tei:settlement[1]/@key",
         )
         event_graph.serialize("death.ttl")
         event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
-            subj, x, event_type="death", verbose=True, date_node_xpath="/tei:nonsense[1]"
+            subj,
+            x,
+            domain="https://foo/bar/",
+            event_type="death",
+            verbose=True,
+            date_node_xpath="/tei:nonsense[1]",
+            place_id_xpath="//tei:settlement[1]/@key",
         )
         for bad in x.xpath(".//tei:death", namespaces=NSMAP):
             bad.getparent().remove(bad)
         event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
-            subj, x, event_type="death", verbose=True
+            subj, x, domain="https://foo/bar/", event_type="death", verbose=True,
         )
-
         new_sample = """
 <TEI xmlns="http://www.tei-c.org/ns/1.0">
     <person xml:id="DWpers0091" sortKey="Gulbransson_Olaf_Leonhard">
@@ -333,6 +344,6 @@ mein schatz ich liebe    dich
         item_id = f"https://foo/bar/{xml_id}"
         subj = URIRef(item_id)
         event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
-            subj, x, verbose=False
+            subj, x, domain="https://foo/bar/", verbose=False, place_id_xpath="//tei:nonsense[1]/@key",
         )
         event_graph.serialize("no_date.ttl")
