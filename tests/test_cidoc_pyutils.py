@@ -28,7 +28,7 @@ sample = """
         <birth when="1873-05-26">26. 5. 1873<placeName key="#DWplace00139"
                 >Christiania (Oslo)</placeName></birth>
         <death>
-            <date when-iso="1905-07-04">04.07.1905</date>
+            <date notBefore-iso="1905-07-04" when="1955" to="2000">04.07.1905</date>
             <settlement key="pmb50">
                 <placeName type="pref">Wien</placeName>
                 <location><geo>48.2066 16.37341</geo></location>
@@ -286,8 +286,9 @@ mein schatz ich liebe    dich
         item_id = f"https://foo/bar/{xml_id}"
         subj = URIRef(item_id)
         event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
-            subj, x, event_type="birth", verbose=False
+            subj, x, verbose=False
         )
+        event_graph.serialize("birth.ttl")
         self.assertTrue(isinstance(event_graph, Graph))
         for uri in [birth_uri, birth_timestamp]:
             self.assertTrue(isinstance(uri, URIRef))
@@ -297,11 +298,41 @@ mein schatz ich liebe    dich
         for uri in [birth_uri, birth_timestamp]:
             self.assertTrue((uri, None))
         event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
-            subj, x, event_type="death", verbose=True
+            subj, x, event_type="death", verbose=True, date_node_xpath="/tei:date[1]"
         )
         event_graph.serialize("death.ttl")
+        event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
+            subj, x, event_type="death", verbose=True, date_node_xpath="/tei:nonsense[1]"
+        )
         for bad in x.xpath(".//tei:death", namespaces=NSMAP):
             bad.getparent().remove(bad)
         event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
             subj, x, event_type="death", verbose=True
         )
+
+        new_sample = """
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <person xml:id="DWpers0091" sortKey="Gulbransson_Olaf_Leonhard">
+        <persName type="pref">Gulbransson, Olaf</persName>
+        <birth>
+            26. 5. 1873<placeName key="#DWplace00139">Christiania (Oslo)</placeName>
+        </birth>
+        <death>
+            <date notBefore-iso="1905-07-04" when="1955" to="2000">04.07.1905</date>
+            <settlement key="pmb50">
+                <placeName type="pref">Wien</placeName>
+                <location><geo>48.2066 16.37341</geo></location>
+            </settlement>
+        </death>
+    </person>
+</TEI>"""
+
+        doc = ET.fromstring(new_sample)
+        x = doc.xpath(".//tei:person[1]", namespaces=NSMAP)[0]
+        xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
+        item_id = f"https://foo/bar/{xml_id}"
+        subj = URIRef(item_id)
+        event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
+            subj, x, verbose=False
+        )
+        event_graph.serialize("no_date.ttl")

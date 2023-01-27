@@ -27,13 +27,12 @@ sample = """
             26. 5. 1873<placeName key="#DWplace00139">Christiania (Oslo)</placeName>
         </birth>
         <death>
-            <date when-iso="1905-07-04">04.07.1905</date>
+            <date notBefore-iso="1905-07-04" when="1955" to="2000">04.07.1905</date>
             <settlement key="pmb50">
                 <placeName type="pref">Wien</placeName>
                 <location><geo>48.2066 16.37341</geo></location>
             </settlement>
         </death>
-        
     </person>
 </TEI>"""
 
@@ -43,7 +42,10 @@ xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
 item_id = f"https://foo/bar/{xml_id}"
 subj = URIRef(item_id)
 event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
-    subj, x, event_type="death", verbose=True
+    subj, x
+)
+event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
+    subj, x, event_type="death", verbose=True, date_node_xpath="/tei:date[1]"
 )
 event_graph.serialize(format="turtle")
 # returns
@@ -52,10 +54,29 @@ event_graph.serialize(format="turtle")
 @prefix ns1: <http://www.cidoc-crm.org/cidoc-crm/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
+# birth example
+
+<https://foo/bar/dwpers0091/birth> a ns1:E67_Birth ;
+    rdfs:label "Geburt von Gulbransson, Olaf Leonhard"@fr ;
+    ns1:P4_has_time-span <https://foo/bar/dwpers0091/birth/timestamp> ;
+    ns1:P98_brought_into_life <https://foo/bar/dwpers0091> .
+
+<https://foo/bar/dwpers0091/birth/timestamp> a ns1:E52_Time-Span ;
+    rdfs:label "1873-05-26 - 1873-05-26"^^xsd:string ;
+    ns1:P82a_begin_of_the_begin "1873-05-26"^^xsd:date ;
+    ns1:P82b_end_of_the_end "1873-05-26"^^xsd:date .
+
+# death example
+
 <https://foo/bar/dwpers0091/death> a ns1:E69_Death ;
     rdfs:label "Geburt von Gulbransson, Olaf Leonhard"@fr ;
     ns1:P100_was_death_of <https://foo/bar/dwpers0091> ;
     ns1:P4_has_time-span <https://foo/bar/dwpers0091/death/timestamp> .
+
+<https://foo/bar/dwpers0091/death/timestamp> a ns1:E52_Time-Span ;
+    rdfs:label "1905-07-04 - 2000"^^xsd:string ;
+    ns1:P82a_begin_of_the_begin "1905-07-04"^^xsd:date ;
+    ns1:P82b_end_of_the_end "2000"^^xsd:gYear .
 ```
 
 

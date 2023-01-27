@@ -266,6 +266,7 @@ def make_birth_death_entities(
     verbose=False,
     default_prefix="Geburt von",
     default_lang="de",
+    date_node_xpath=""
 ):
     g = Graph()
     name_node = node.xpath(".//tei:persName[1]", namespaces=NSMAP)[0]
@@ -279,6 +280,11 @@ def make_birth_death_entities(
         cidoc_property = CIDOC["P100_was_death_of"]
         cidoc_class = CIDOC["E69_Death"]
     xpath_expr = f".//tei:{event_type}[1]"
+    if date_node_xpath != "":
+        date_xpath = f"{xpath_expr}/{date_node_xpath}"
+    else:
+        date_xpath = xpath_expr
+    print(date_xpath)
     try:
         node.xpath(xpath_expr, namespaces=NSMAP)[0]
     except IndexError as e:
@@ -293,4 +299,15 @@ def make_birth_death_entities(
         (event_uri, RDFS.label, Literal(f"{default_prefix} {label}", lang=label_lang))
     )
     g.set((event_uri, CIDOC["P4_has_time-span"], time_stamp_uri))
+    try:
+        date_node = node.xpath(date_xpath, namespaces=NSMAP)[0]
+        date_item = True
+    except IndexError:
+        date_item = False
+    if date_item:
+        start, end = extract_begin_end(date_node)
+        try:
+            g += create_e52(time_stamp_uri, begin_of_begin=start, end_of_end=end)
+        except TypeError:
+            pass
     return (g, event_uri, time_stamp_uri)
