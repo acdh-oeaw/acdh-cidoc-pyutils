@@ -5,7 +5,7 @@ from lxml.etree import Element
 from rdflib import Graph, Literal, URIRef, XSD, RDF, RDFS, OWL
 from slugify import slugify
 from acdh_tei_pyutils.utils import make_entity_label
-from acdh_cidoc_pyutils.namespaces import CIDOC, NSMAP
+from acdh_cidoc_pyutils.namespaces import CIDOC, NSMAP, DATE_ATTRIBUTE_DICT
 
 
 def normalize_string(string: str) -> str:
@@ -45,19 +45,41 @@ def coordinates_to_p168(
     return g
 
 
-def extract_begin_end(date_object: Union[Element, dict]) -> tuple[str, str]:
-    begin, end = "", ""
-    if date_object.get("when-iso", "") != "":
-        return (date_object.get("when-iso"), date_object.get("when-iso"))
-    elif date_object.get("when", "") != "":
-        return (date_object.get("when"), date_object.get("when"))
-    begin = date_object.get("notBefore", "")
-    end = date_object.get("notAfter", "")
-    if begin != "" and end == "":
-        end = begin
-    if end != "" and begin == "":
-        begin = end
-    return (begin, end)
+def extract_begin_end(
+    date_object: Union[Element, dict],
+    fill_missing=True,
+    attribute_map=DATE_ATTRIBUTE_DICT,
+) -> tuple[Union[str, bool], Union[str, bool]]:
+    final_start, final_end = None, None
+    start, end, when = None, None, None
+    for key, value in attribute_map.items():
+        date_value = date_object.get(key)
+        if date_value and value == "start":
+            start = date_value
+        if date_value and value == "end":
+            end = date_value
+        if date_value and value == "when":
+            when = date_value
+    if fill_missing:
+        if start or end or when:
+            if start and end:
+                final_start, final_end = start, end
+            elif start and not end and not when:
+                final_start, final_end = start, start
+            elif end and not start and not when:
+                final_start, final_end = end, end
+            elif when and not start and not end:
+                final_start, final_end = when, when
+    else:
+        if start and end:
+            final_start, final_end = start, end
+        elif start and not end and not when:
+            final_start, final_end = start, None
+        elif end and not start and not when:
+            final_start, final_end = None, end
+        elif when and not start and not end:
+            final_start, final_end = when, when
+    return final_start, final_end
 
 
 def date_to_literal(date_str: str) -> Literal:
