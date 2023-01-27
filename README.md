@@ -299,7 +299,7 @@ print(normalize_string(string))
 
 ### extract date attributes (begin, end)
 
-expects typical TEI date attributes like `@when, @when-iso, @notBefore, @notAfter` and returns a tuple containg start- and enddate values. If only `@when or @when-iso` or only `@notBefore or @notAfter` are provided, the returned values are the same
+expects typical TEI date attributes like `@when, @when-iso, @notBefore, @notAfter, @from, @to, ...` and returns a tuple containg start- and enddate values. If only `@when or @when-iso` or only `@notBefore or @notAfter` are provided, the returned values are the same, unless the default parameter `fill_missing` is set to false. 
 
 ```python
 from lxml.etree import Element
@@ -312,6 +312,14 @@ print(extract_begin_end(date_object))
 
 # returns
 # ('1900-12-12', '1900-12-12')
+
+date_string = "1900-12-12"
+date_object = Element("{http://www.tei-c.org/ns/1.0}tei")
+date_object.attrib["when-iso"] = date_string
+print(extract_begin_end(date_object, fill_missing=False))
+
+# returns
+# ('1900-12-12', None)
 
 date_object = Element("{http://www.tei-c.org/ns/1.0}tei")
 date_object.attrib["notAfter"] = "1900-12-12"

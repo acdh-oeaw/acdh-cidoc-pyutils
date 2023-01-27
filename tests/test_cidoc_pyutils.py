@@ -144,37 +144,61 @@ mein schatz ich liebe    dich
         date_object = Element("hansi")
         date_object.attrib["when-iso"] = date_string
         begin, end = extract_begin_end(date_object)
-        self.assertTrue(begin, date_string)
-        self.assertTrue(end, date_string)
+        self.assertEqual(begin, date_string)
+        self.assertEqual(end, date_string)
+        begin, end = extract_begin_end(date_object, fill_missing=False)
+        self.assertEqual(begin, date_string)
+        self.assertEqual(end, date_string)
+
+        date_string = "1900-12-12"
+        date_object = Element("hansi")
+        date_object.attrib["from-iso"] = date_string
+        begin, end = extract_begin_end(date_object, fill_missing=False)
+        self.assertEqual(begin, date_string)
+        self.assertEqual(end, None)
 
         date_string = "1900-12-12"
         date_object = Element("hansi")
         date_object.attrib["when"] = date_string
         begin, end = extract_begin_end(date_object)
-        self.assertTrue(begin, date_string)
-        self.assertTrue(end, date_string)
+        self.assertEqual(begin, date_string)
+        self.assertEqual(end, date_string)
 
         date_string = "1900-12-12"
         date_object = Element("hansi")
         date_object.attrib["notAfter"] = date_string
         begin, end = extract_begin_end(date_object)
-        self.assertTrue(begin, date_string)
-        self.assertTrue(end, date_string)
+        self.assertEqual(begin, date_string)
+        self.assertEqual(end, date_string)
 
         date_string = "1900-12-12"
         date_object = Element("hansi")
         date_object.attrib["notBefore"] = date_string
         begin, end = extract_begin_end(date_object)
-        self.assertTrue(begin, date_string)
-        self.assertTrue(end, date_string)
+        self.assertEqual(begin, date_string)
+        self.assertEqual(end, date_string)
 
         date_string = "1900-12-12"
         date_object = Element("hansi")
         date_object.attrib["notAfter"] = date_string
         date_object.attrib["notBefore"] = "1800"
         begin, end = extract_begin_end(date_object)
-        self.assertTrue(begin, "1800")
-        self.assertTrue(end, date_string)
+        self.assertEqual(begin, "1800")
+        self.assertEqual(end, date_string)
+
+        date_string = "1900-12-12"
+        date_object = Element("hansi")
+        date_object.attrib["notAfter"] = date_string
+        date_object.attrib["notBefore"] = "1800"
+        begin, end = extract_begin_end(date_object, fill_missing=False)
+        self.assertEqual(begin, "1800")
+        self.assertEqual(end, date_string)
+        date_string = "1900-12-12"
+        date_object = Element("hansi")
+        date_object.attrib["to"] = date_string
+        begin, end = extract_begin_end(date_object, fill_missing=False)
+        self.assertEqual(begin, None)
+        self.assertEqual(end, date_string)
 
     def test_007_make_appelations(self):
         g = Graph()
