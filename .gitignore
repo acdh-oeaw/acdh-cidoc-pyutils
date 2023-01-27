@@ -136,3 +136,5 @@ ids.ttl
 coords.ttl
 coords1.ttl
 death.ttl
+birth.ttl
+no_date.ttl
