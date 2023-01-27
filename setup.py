@@ -24,7 +24,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
     ],
-    description="Helper functions for the generation of CIDOC CRMish RDF",
+    description="Helper functions for the generation of CIDOC CRMish RDF (from XML/TEI data)",
     install_requires=requirements,
     license="MIT license",
     long_description=readme,

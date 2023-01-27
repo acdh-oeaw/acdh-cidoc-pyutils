@@ -138,8 +138,9 @@ from acdh_cidoc_pyutils import create_e52, make_uri
 uri = make_uri()
 e52 = create_e52(uri, begin_of_begin="1800-12-12", end_of_end="1900-01")
 print(e52.serialize())
-
 # returns
+```
+```ttl
 # @prefix ns1: <http://www.cidoc-crm.org/cidoc-crm/> .
 # @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 # @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -282,7 +283,6 @@ g.serialize(format="ttl")
 <https://foo/bar/dwplace00092/appelation/2> a ns1:E33_E41_Linguistic_Appellation ;
     rdfs:label "Tallinn"@und ;
     ns1:P2_has_type <http://hansi/4/ever/alt-label> .
-
 ```
 ### normalize_string
 
@@ -299,7 +299,7 @@ print(normalize_string(string))
 
 ### extract date attributes (begin, end)
 
-expects typical TEI date attributes like `@when, @when-iso, @notBefore, @notAfter, @from, @to, ...` and returns a tuple containg start- and enddate values. If only `@when or @when-iso` or only `@notBefore or @notAfter` are provided, the returned values are the same, unless the default parameter `fill_missing` is set to false. 
+expects typical TEI date attributes like `@when, @when-iso, @notBefore, @notAfter, @from, @to, ...` and returns a tuple containg start- and enddate values. If only `@when or @when-iso` or only `@notBefore or @notAfter` are provided, the returned values are the same, unless the default parameter `fill_missing` is set to `False`. 
 
 ```python
 from lxml.etree import Element
