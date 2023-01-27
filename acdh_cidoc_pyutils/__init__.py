@@ -284,7 +284,6 @@ def make_birth_death_entities(
         date_xpath = f"{xpath_expr}/{date_node_xpath}"
     else:
         date_xpath = xpath_expr
-    print(date_xpath)
     try:
         node.xpath(xpath_expr, namespaces=NSMAP)[0]
     except IndexError as e:
