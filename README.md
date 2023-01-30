@@ -42,10 +42,11 @@ xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
 item_id = f"https://foo/bar/{xml_id}"
 subj = URIRef(item_id)
 event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
-    subj, x
+    subj, x, place_id_xpath="//tei:placeName[1]/@key
 )
 event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
-    subj, x, event_type="death", verbose=True, date_node_xpath="/tei:date[1]"
+    subj, x, event_type="death", verbose=True, date_node_xpath="/tei:date[1]",
+    place_id_xpath="//tei:settlement[1]/@key"
 )
 event_graph.serialize(format="turtle")
 # returns
@@ -59,6 +60,7 @@ event_graph.serialize(format="turtle")
 <https://foo/bar/dwpers0091/birth> a ns1:E67_Birth ;
     rdfs:label "Geburt von Gulbransson, Olaf Leonhard"@fr ;
     ns1:P4_has_time-span <https://foo/bar/dwpers0091/birth/timestamp> ;
+    ns1:P7_took_place_at <https://foo/bar/DWplace00139> ;
     ns1:P98_brought_into_life <https://foo/bar/dwpers0091> .
 
 <https://foo/bar/dwpers0091/birth/timestamp> a ns1:E52_Time-Span ;
@@ -71,6 +73,7 @@ event_graph.serialize(format="turtle")
 <https://foo/bar/dwpers0091/death> a ns1:E69_Death ;
     rdfs:label "Geburt von Gulbransson, Olaf Leonhard"@fr ;
     ns1:P100_was_death_of <https://foo/bar/dwpers0091> ;
+    ns1:P7_took_place_at <https://foo/bar/pmb50>
     ns1:P4_has_time-span <https://foo/bar/dwpers0091/death/timestamp> .
 
 <https://foo/bar/dwpers0091/death/timestamp> a ns1:E52_Time-Span ;
