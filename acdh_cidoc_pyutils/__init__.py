@@ -5,7 +5,7 @@ from lxml.etree import Element
 from rdflib import Graph, Literal, URIRef, XSD, RDF, RDFS, OWL
 from slugify import slugify
 from acdh_tei_pyutils.utils import make_entity_label
-from acdh_cidoc_pyutils.namespaces import CIDOC, NSMAP, DATE_ATTRIBUTE_DICT
+from acdh_cidoc_pyutils.namespaces import CIDOC, FRBROO, NSMAP, DATE_ATTRIBUTE_DICT
 
 
 def normalize_string(string: str) -> str:
@@ -257,6 +257,31 @@ def make_ed42_identifiers(
                     )
                 )
     return g
+
+
+def make_occupations(subj: URIRef, node: Element, domain: str, prefix="occupation", id_xpath=False, default_lang="de"):
+    g = Graph()
+    occ_uris = []
+    base_uri = f"{domain}/{prefix}"
+    for x in node.xpath('.//tei:occupation', namespaces=NSMAP):
+        try:
+            lang = x.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
+        except KeyError:
+            lang = default_lang
+        occ_text = normalize_string(" ".join(x.xpath('.//text()')))
+        if id_xpath:
+            occ_id = x.xpath(id_xpath, namespaces=NSMAP)[0]
+        else:
+            occ_id = slugify(occ_text)
+        occ_uri = URIRef(f"{base_uri}/{occ_id}")
+        occ_uris.append(occ_uri)
+        g.add((occ_uri, RDF.type, FRBROO["F51"]))
+        g.add((occ_uri, RDFS.label, Literal(occ_text, lang=lang)))
+        g.add((
+            subj, CIDOC["P14i_performed"], occ_uri
+        ))
+
+    return (g, occ_uris)
 
 
 def make_birth_death_entities(
