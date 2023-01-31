@@ -269,10 +269,16 @@ def make_occupations(subj: URIRef, node: Element, domain: str, prefix="occupatio
         except KeyError:
             lang = default_lang
         occ_text = normalize_string(" ".join(x.xpath('.//text()')))
+        occ_id = slugify(occ_text)
         if id_xpath:
-            occ_id = x.xpath(id_xpath, namespaces=NSMAP)[0]
+            try:
+                occ_id = x.xpath(id_xpath, namespaces=NSMAP)[0]
+            except IndexError:
+                pass
         else:
             occ_id = slugify(occ_text)
+        if occ_id.startswith('#'):
+            occ_id = occ_id[1:]
         occ_uri = URIRef(f"{base_uri}/{occ_id}")
         occ_uris.append(occ_uri)
         g.add((occ_uri, RDF.type, FRBROO["F51"]))
@@ -280,7 +286,6 @@ def make_occupations(subj: URIRef, node: Element, domain: str, prefix="occupatio
         g.add((
             subj, CIDOC["P14i_performed"], occ_uri
         ))
-
     return (g, occ_uris)
 
 

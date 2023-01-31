@@ -14,6 +14,7 @@ from acdh_cidoc_pyutils import (
     make_ed42_identifiers,
     coordinates_to_p168,
     make_birth_death_entities,
+    make_occupations
 )
 from acdh_cidoc_pyutils.namespaces import NSMAP, CIDOC
 
@@ -340,10 +341,42 @@ mein schatz ich liebe    dich
 
         doc = ET.fromstring(new_sample)
         x = doc.xpath(".//tei:person[1]", namespaces=NSMAP)[0]
-        xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
+        xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"]
         item_id = f"https://foo/bar/{xml_id}"
         subj = URIRef(item_id)
         event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
             subj, x, domain="https://foo/bar/", verbose=False, place_id_xpath="//tei:nonsense[1]/@key",
         )
         event_graph.serialize("no_date.ttl")
+
+    def test_011_occupation(self):
+        new_sample = """
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <person xml:id="DWpers0091" sortKey="Gulbransson_Olaf_Leonhard">
+        <persName type="pref">Gulbransson, Olaf</persName>
+        <occupation key="#hansi" xml:lang="it">Bürgermeister</occupation>
+        <occupation key="#sumsi">Tischlermeister/Fleischhauer</occupation>
+        <occupation key="franzi">Sängerin</occupation>
+        <occupation>Bäckerin</occupation>
+        <birth>
+            26. 5. 1873<placeName key="#DWplace00139">Christiania (Oslo)</placeName>
+        </birth>
+        <death>
+            <date notBefore-iso="1905-07-04" when="1955" to="2000">04.07.1905</date>
+            <settlement key="pmb50">
+                <placeName type="pref">Wien</placeName>
+                <location><geo>48.2066 16.37341</geo></location>
+            </settlement>
+        </death>
+    </person>
+</TEI>"""
+        doc = ET.fromstring(new_sample)
+        x = doc.xpath(".//tei:person[1]", namespaces=NSMAP)[0]
+        xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"]
+        item_id = f"https://foo/bar/{xml_id}"
+        subj = URIRef(item_id)
+        g, uris = make_occupations(subj, x, "https://foo.bar")
+        self.assertFalse('occupation/hansi' in g.serialize())
+        g, uris = make_occupations(subj, x, "https://foo.bar", id_xpath="@key")
+        self.assertTrue('occupation/hansi' in g.serialize())
+        g.serialize("occupations.ttl")
