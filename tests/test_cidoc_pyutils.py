@@ -354,20 +354,10 @@ mein schatz ich liebe    dich
 <TEI xmlns="http://www.tei-c.org/ns/1.0">
     <person xml:id="DWpers0091" sortKey="Gulbransson_Olaf_Leonhard">
         <persName type="pref">Gulbransson, Olaf</persName>
-        <occupation key="#hansi" xml:lang="it">Bürgermeister</occupation>
-        <occupation key="#sumsi">Tischlermeister/Fleischhauer</occupation>
+        <occupation notBefore="1900-12" notAfter="2000" key="#hansi" xml:lang="it">Bürgermeister</occupation>
+        <occupation from="1233-02-03" key="#sumsi">Tischlermeister/Fleischhauer</occupation>
         <occupation key="franzi">Sängerin</occupation>
         <occupation>Bäckerin</occupation>
-        <birth>
-            26. 5. 1873<placeName key="#DWplace00139">Christiania (Oslo)</placeName>
-        </birth>
-        <death>
-            <date notBefore-iso="1905-07-04" when="1955" to="2000">04.07.1905</date>
-            <settlement key="pmb50">
-                <placeName type="pref">Wien</placeName>
-                <location><geo>48.2066 16.37341</geo></location>
-            </settlement>
-        </death>
     </person>
 </TEI>"""
         doc = ET.fromstring(new_sample)

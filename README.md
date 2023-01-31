@@ -21,7 +21,7 @@ sample = """
 <TEI xmlns="http://www.tei-c.org/ns/1.0">
     <person xml:id="DWpers0091" sortKey="Gulbransson_Olaf_Leonhard">
         <persName type="pref">Gulbransson, Olaf</persName>
-        <occupation key="#hansi" xml:lang="it">Bürgermeister</occupation>
+        <occupation notBefore="1900-12" notAfter="2000" key="#hansi" xml:lang="it">Bürgermeister</occupation>
         <occupation key="#sumsi">Tischlermeister/Fleischhauer</occupation>
         <occupation key="franzi">Sängerin</occupation>
         <occupation>Bäckerin</occupation>
@@ -47,10 +47,16 @@ print(g.serialize())
     rdfs:label "Sängerin"@de .
 
 <https://foo.bar/occupation/hansi> a <http://iflastandards.info/ns/fr/frbr/frbroo#F51> ;
-    rdfs:label "Bürgermeister"@it .
+    rdfs:label "Bürgermeister"@it ;
+    ns1:P4_has_time-span <https://foo.bar/occupation/hansi/timestamp> .
 
 <https://foo.bar/occupation/sumsi> a <http://iflastandards.info/ns/fr/frbr/frbroo#F51> ;
     rdfs:label "Tischlermeister/Fleischhauer"@de .
+
+<https://foo.bar/occupation/hansi/timestamp> a ns1:E52_Time-Span ;
+    rdfs:label "1900 - 2000"^^xsd:string ;
+    ns1:P82a_begin_of_the_begin "1900-12"^^xsd:gYearMonth ;
+    ns1:P82b_end_of_the_end "2000"^^xsd:gYear .
 ```
 
 ### extract birth/death triples from `tei:person`

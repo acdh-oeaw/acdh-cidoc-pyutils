@@ -286,6 +286,11 @@ def make_occupations(subj: URIRef, node: Element, domain: str, prefix="occupatio
         g.add((
             subj, CIDOC["P14i_performed"], occ_uri
         ))
+        begin, end = extract_begin_end(x)
+        if begin or end:
+            ts_uri = URIRef(f"{occ_uri}/timestamp")
+            g.add((occ_uri, CIDOC["P4_has_time-span"], ts_uri))
+            g += create_e52(ts_uri, begin_of_begin=begin, end_of_end=end)
     return (g, occ_uris)
 
 
