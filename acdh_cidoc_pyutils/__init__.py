@@ -262,21 +262,21 @@ def make_ed42_identifiers(
 def make_occupations(subj: URIRef, node: Element, domain: str, prefix="occupation", id_xpath=False, default_lang="de"):
     g = Graph()
     occ_uris = []
-    base_uri = f"{domain}/{prefix}"
-    for x in node.xpath('.//tei:occupation', namespaces=NSMAP):
+    base_uri = f"{subj}/{prefix}"
+    for i, x in enumerate(node.xpath('.//tei:occupation', namespaces=NSMAP)):
         try:
             lang = x.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
         except KeyError:
             lang = default_lang
         occ_text = normalize_string(" ".join(x.xpath('.//text()')))
-        occ_id = slugify(occ_text)
+        occ_id = f"{i}"
         if id_xpath:
             try:
                 occ_id = x.xpath(id_xpath, namespaces=NSMAP)[0]
             except IndexError:
                 pass
         else:
-            occ_id = slugify(occ_text)
+            occ_id = occ_id
         if occ_id.startswith('#'):
             occ_id = occ_id[1:]
         occ_uri = URIRef(f"{base_uri}/{occ_id}")
