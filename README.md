@@ -12,6 +12,47 @@ Helper functions for the generation of CIDOC CRMish RDF (from XML/TEI data)
 
 ## Examples
 
+### extract `cidoc:P14i_performed FRBROO:F51_ Pursuit` triples from `tei:person/tei:occupation` nodes
+```python
+import lxml.etree as ET
+from rdflib import URIRef
+rom acdh_cidoc_pyutils import make_occupations, NSMAP
+sample = """
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <person xml:id="DWpers0091" sortKey="Gulbransson_Olaf_Leonhard">
+        <persName type="pref">Gulbransson, Olaf</persName>
+        <occupation key="#hansi" xml:lang="it">Bürgermeister</occupation>
+        <occupation key="#sumsi">Tischlermeister/Fleischhauer</occupation>
+        <occupation key="franzi">Sängerin</occupation>
+        <occupation>Bäckerin</occupation>
+    </person>
+</TEI>"""
+g, uris = make_occupations(subj, x, "https://foo.bar", id_xpath="@key")
+print(g.serialize())
+# returns
+```
+```ttl
+@prefix ns1: <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<https://foo/bar/DWpers0091> ns1:P14i_performed <https://foo.bar/occupation/backerin>,
+        <https://foo.bar/occupation/franzi>,
+        <https://foo.bar/occupation/hansi>,
+        <https://foo.bar/occupation/sumsi> .
+
+<https://foo.bar/occupation/backerin> a <http://iflastandards.info/ns/fr/frbr/frbroo#F51> ;
+    rdfs:label "Bäckerin"@de .
+
+<https://foo.bar/occupation/franzi> a <http://iflastandards.info/ns/fr/frbr/frbroo#F51> ;
+    rdfs:label "Sängerin"@de .
+
+<https://foo.bar/occupation/hansi> a <http://iflastandards.info/ns/fr/frbr/frbroo#F51> ;
+    rdfs:label "Bürgermeister"@it .
+
+<https://foo.bar/occupation/sumsi> a <http://iflastandards.info/ns/fr/frbr/frbroo#F51> ;
+    rdfs:label "Tischlermeister/Fleischhauer"@de .
+```
+
 ### extract birth/death triples from `tei:person`
 
 ```python
