@@ -259,7 +259,7 @@ def make_ed42_identifiers(
     return g
 
 
-def make_occupations(subj: URIRef, node: Element, domain: str, prefix="occupation", id_xpath=False, default_lang="de"):
+def make_occupations(subj: URIRef, node: Element, prefix="occupation", id_xpath=False, default_lang="de"):
     g = Graph()
     occ_uris = []
     base_uri = f"{subj}/{prefix}"
@@ -292,6 +292,43 @@ def make_occupations(subj: URIRef, node: Element, domain: str, prefix="occupatio
             g.add((occ_uri, CIDOC["P4_has_time-span"], ts_uri))
             g += create_e52(ts_uri, begin_of_begin=begin, end_of_end=end)
     return (g, occ_uris)
+
+
+def make_affiliations(subj: URIRef, node: Element, domain: str, org_id_xpath="./@ref", org_label_xpath=""):
+    g = Graph()
+    xml_id = node.attrib["{http://www.w3.org/XML/1998/namespace}id"]
+    item_id = f"{domain}{xml_id}"
+    subj = URIRef(item_id)
+    for i, x in enumerate(node.xpath('.//tei:affiliation')):
+        try:
+            affiliation_id = x.xpath(org_id_xpath, namespaces=NSMAP)[0]
+        except IndexError:
+            continue
+        if affiliation_id.startswith('#'):
+            affiliation_id = affiliation_id[1:]
+        org_affiliation_uri = URIRef(f"{domain}/{affiliation_id}")
+        join_uri = URIRef(f"{subj}/joining/{affiliation_id}/{i}")
+        leave_uri = URIRef(f"{subj}/leaving/{affiliation_id}/{i}")
+        g.add((
+            join_uri, RDF.type, CIDOC["E85_Joining"]
+        ))
+        g.add((
+            join_uri, CIDOC["P143_joined"], subj
+        ))
+        g.add((
+            join_uri, CIDOC["P144_joined_with"], org_affiliation_uri
+        ))
+        g.add((
+            leave_uri, RDF.type, CIDOC["E86_Leaving"]
+        ))
+        g.add((
+            leave_uri, CIDOC["P145_separated"], subj
+        ))
+        g.add((
+            leave_uri, CIDOC["P146_separated_from"], org_affiliation_uri
+        ))
+        return g
+
 
 
 def make_birth_death_entities(
