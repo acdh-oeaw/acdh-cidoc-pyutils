@@ -22,7 +22,7 @@ sample = """
     <person xml:id="DWpers0091" sortKey="Gulbransson_Olaf_Leonhard">
         <persName type="pref">Gulbransson, Olaf</persName>
         <occupation notBefore="1900-12" notAfter="2000" key="#hansi" xml:lang="it">Bürgermeister</occupation>
-        <occupation key="#sumsi">Tischlermeister/Fleischhauer</occupation>
+        <occupation from="1233-02-03" key="#sumsi">Tischlermeister/Fleischhauer</occupation>
         <occupation key="franzi">Sängerin</occupation>
         <occupation>Bäckerin</occupation>
     </person>
@@ -34,29 +34,36 @@ print(g.serialize())
 ```ttl
 @prefix ns1: <http://www.cidoc-crm.org/cidoc-crm/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-<https://foo/bar/DWpers0091> ns1:P14i_performed <https://foo.bar/occupation/backerin>,
-        <https://foo.bar/occupation/franzi>,
-        <https://foo.bar/occupation/hansi>,
-        <https://foo.bar/occupation/sumsi> .
+<https://foo/bar/DWpers0091> ns1:P14i_performed <https://foo/bar/DWpers0091/occupation/3>,
+        <https://foo/bar/DWpers0091/occupation/franzi>,
+        <https://foo/bar/DWpers0091/occupation/hansi>,
+        <https://foo/bar/DWpers0091/occupation/sumsi> .
 
-<https://foo.bar/occupation/backerin> a <http://iflastandards.info/ns/fr/frbr/frbroo#F51> ;
+<https://foo/bar/DWpers0091/occupation/3> a <http://iflastandards.info/ns/fr/frbr/frbroo#F51> ;
     rdfs:label "Bäckerin"@de .
 
-<https://foo.bar/occupation/franzi> a <http://iflastandards.info/ns/fr/frbr/frbroo#F51> ;
+<https://foo/bar/DWpers0091/occupation/franzi> a <http://iflastandards.info/ns/fr/frbr/frbroo#F51> ;
     rdfs:label "Sängerin"@de .
 
-<https://foo.bar/occupation/hansi> a <http://iflastandards.info/ns/fr/frbr/frbroo#F51> ;
+<https://foo/bar/DWpers0091/occupation/hansi> a <http://iflastandards.info/ns/fr/frbr/frbroo#F51> ;
     rdfs:label "Bürgermeister"@it ;
-    ns1:P4_has_time-span <https://foo.bar/occupation/hansi/timestamp> .
+    ns1:P4_has_time-span <https://foo/bar/DWpers0091/occupation/hansi/timestamp> .
 
-<https://foo.bar/occupation/sumsi> a <http://iflastandards.info/ns/fr/frbr/frbroo#F51> ;
-    rdfs:label "Tischlermeister/Fleischhauer"@de .
-
-<https://foo.bar/occupation/hansi/timestamp> a ns1:E52_Time-Span ;
-    rdfs:label "1900 - 2000"^^xsd:string ;
+<https://foo/bar/DWpers0091/occupation/hansi/timestamp> a ns1:E52_Time-Span ;
+    rdfs:label "1900-12 - 2000"^^xsd:string ;
     ns1:P82a_begin_of_the_begin "1900-12"^^xsd:gYearMonth ;
     ns1:P82b_end_of_the_end "2000"^^xsd:gYear .
+
+<https://foo/bar/DWpers0091/occupation/sumsi> a <http://iflastandards.info/ns/fr/frbr/frbroo#F51> ;
+    rdfs:label "Tischlermeister/Fleischhauer"@de ;
+    ns1:P4_has_time-span <https://foo/bar/DWpers0091/occupation/sumsi/timestamp> .
+
+<https://foo/bar/DWpers0091/occupation/sumsi/timestamp> a ns1:E52_Time-Span ;
+    rdfs:label "1233-02-03 - 1233-02-03"^^xsd:string ;
+    ns1:P82a_begin_of_the_begin "1233-02-03"^^xsd:date ;
+    ns1:P82b_end_of_the_end "1233-02-03"^^xsd:date .
 ```
 
 ### extract birth/death triples from `tei:person`
