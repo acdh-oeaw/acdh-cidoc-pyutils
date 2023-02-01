@@ -365,8 +365,10 @@ mein schatz ich liebe    dich
         xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"]
         item_id = f"https://foo/bar/{xml_id}"
         subj = URIRef(item_id)
-        g, uris = make_occupations(subj, x, "https://foo.bar")
-        self.assertFalse('occupation/hansi' in g.serialize())
-        g, uris = make_occupations(subj, x, "https://foo.bar", id_xpath="@key")
-        self.assertTrue('occupation/hansi' in g.serialize())
+        g, uris = make_occupations(subj, x)
+        self.assertFalse('occupation/hansi' in g.serialize(format="turtle"))
         g.serialize("occupations.ttl")
+        g1, uris = make_occupations(subj, x, id_xpath="@key")
+        g1.serialize("occupations1.ttl")
+        self.assertTrue('occupation/hansi' in g1.serialize(format="turtle"))
+        

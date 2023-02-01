@@ -269,14 +269,14 @@ def make_occupations(subj: URIRef, node: Element, prefix="occupation", id_xpath=
         except KeyError:
             lang = default_lang
         occ_text = normalize_string(" ".join(x.xpath('.//text()')))
-        occ_id = f"{i}"
+        
         if id_xpath:
             try:
                 occ_id = x.xpath(id_xpath, namespaces=NSMAP)[0]
             except IndexError:
                 pass
         else:
-            occ_id = occ_id
+            occ_id = f"{i}"
         if occ_id.startswith('#'):
             occ_id = occ_id[1:]
         occ_uri = URIRef(f"{base_uri}/{occ_id}")
@@ -328,7 +328,6 @@ def make_affiliations(subj: URIRef, node: Element, domain: str, org_id_xpath="./
             leave_uri, CIDOC["P146_separated_from"], org_affiliation_uri
         ))
         return g
-
 
 
 def make_birth_death_entities(
