@@ -15,6 +15,7 @@ from acdh_cidoc_pyutils import (
     coordinates_to_p168,
     make_birth_death_entities,
     make_occupations,
+    make_affiliations,
 )
 from acdh_cidoc_pyutils.namespaces import NSMAP, CIDOC
 
@@ -358,7 +359,7 @@ mein schatz ich liebe    dich
         event_graph.serialize("no_date.ttl")
 
     def test_011_occupation(self):
-        new_sample = """
+        sample = """
 <TEI xmlns="http://www.tei-c.org/ns/1.0">
     <person xml:id="DWpers0091" sortKey="Gulbransson_Olaf_Leonhard">
         <persName type="pref">Gulbransson, Olaf</persName>
@@ -368,7 +369,7 @@ mein schatz ich liebe    dich
         <occupation>Bäckerin</occupation>
     </person>
 </TEI>"""
-        doc = ET.fromstring(new_sample)
+        doc = ET.fromstring(sample)
         x = doc.xpath(".//tei:person[1]", namespaces=NSMAP)[0]
         xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"]
         item_id = f"https://foo/bar/{xml_id}"
@@ -379,3 +380,55 @@ mein schatz ich liebe    dich
         g1, uris = make_occupations(subj, x, id_xpath="@key")
         g1.serialize("occupations1.ttl")
         self.assertTrue("occupation/hansi" in g1.serialize(format="turtle"))
+
+    def test_012_affiliations(self):
+        domain = "https://foo/bar/"
+        sample = """
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <person xml:id="DWpers0091" sortKey="Gulbransson_Olaf_Leonhard">
+        <persName type="pref">Gulbransson, Olaf</persName>
+        <affiliation notBefore="1900" notAfter="1931">No ref</affiliation>
+        <affiliation notBefore="1900" notAfter="1931" ref="DWorg00010" n="01">SPD</affiliation>
+        <affiliation notBefore="1931" ref="#DWorg00009" n="hansi">SAPD</affiliation>
+        <affiliation notBefore="1938" notAfter="1945-01-02" ref="#DWorg00010" n="03">SPD</affiliation>
+    </person>
+</TEI>"""
+        person_label = "Gulbransson, Olaf"
+        doc = ET.fromstring(sample)
+        x = doc.xpath(".//tei:person[1]", namespaces=NSMAP)[0]
+        xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"]
+        item_id = f"{domain}{xml_id}"
+        subj = URIRef(item_id)
+        g = make_affiliations(subj, x, domain, person_label=person_label)
+        g.serialize("affiliations.ttl")
+
+        domain = "https://foo/bar/"
+        sample = """
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <person xml:id="DWpers0091" sortKey="Gulbransson_Olaf_Leonhard">
+        <persName type="pref">Gulbransson, Olaf</persName>
+        <affiliation>
+            <term key="1153">in Bezug zu</term>
+            <orgName key="pmb46027">Akademisches Gymnasium Wien</orgName>
+        </affiliation>
+        <affiliation>
+            <term key="1182">arbeitet für</term>
+            <orgName key="pmb51868">Cabaret Fledermaus</orgName>
+        </affiliation>
+    </person>
+</TEI>"""
+        person_label = "Gulbransson, Olaf"
+        doc = ET.fromstring(sample)
+        x = doc.xpath(".//tei:person[1]", namespaces=NSMAP)[0]
+        xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"]
+        item_id = f"{domain}{xml_id}"
+        subj = URIRef(item_id)
+        g = make_affiliations(
+            subj,
+            x,
+            domain,
+            person_label=person_label,
+            org_id_xpath="./tei:orgName[1]/@key",
+            org_label_xpath="./tei:orgName[1]//text()"
+        )
+        g.serialize("affiliations1.ttl")

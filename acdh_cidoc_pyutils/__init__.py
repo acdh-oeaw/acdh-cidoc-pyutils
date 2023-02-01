@@ -295,29 +295,37 @@ def make_occupations(
 
 
 def make_affiliations(
-    subj: URIRef, node: Element, domain: str, org_id_xpath="./@ref", org_label_xpath=""
+    subj: URIRef, node: Element, domain: str, person_label: str, org_id_xpath="./@ref", org_label_xpath="", lang="en"
 ):
     g = Graph()
     xml_id = node.attrib["{http://www.w3.org/XML/1998/namespace}id"]
     item_id = f"{domain}{xml_id}"
     subj = URIRef(item_id)
-    for i, x in enumerate(node.xpath(".//tei:affiliation")):
+    for i, x in enumerate(node.xpath(".//tei:affiliation", namespaces=NSMAP)):
         try:
             affiliation_id = x.xpath(org_id_xpath, namespaces=NSMAP)[0]
         except IndexError:
             continue
+        if org_label_xpath == "":
+            org_label = normalize_string(" ".join(x.xpath('.//text()')))
+        else:
+            org_label = normalize_string(" ".join(x.xpath(org_label_xpath, namespaces=NSMAP)))
         if affiliation_id.startswith("#"):
             affiliation_id = affiliation_id[1:]
-        org_affiliation_uri = URIRef(f"{domain}/{affiliation_id}")
+        org_affiliation_uri = URIRef(f"{domain}{affiliation_id}")
         join_uri = URIRef(f"{subj}/joining/{affiliation_id}/{i}")
         leave_uri = URIRef(f"{subj}/leaving/{affiliation_id}/{i}")
+        join_label = f"{person_label} joins {org_label}"
+        leave_label = f"{person_label} leaves {org_label}"
         g.add((join_uri, RDF.type, CIDOC["E85_Joining"]))
         g.add((join_uri, CIDOC["P143_joined"], subj))
         g.add((join_uri, CIDOC["P144_joined_with"], org_affiliation_uri))
+        g.add((join_uri, RDFS.label, Literal(join_label, lang=lang)))
         g.add((leave_uri, RDF.type, CIDOC["E86_Leaving"]))
         g.add((leave_uri, CIDOC["P145_separated"], subj))
         g.add((leave_uri, CIDOC["P146_separated_from"], org_affiliation_uri))
-        return g
+        g.add((leave_uri, RDFS.label, Literal(leave_label, lang=lang)))
+    return g
 
 
 def make_birth_death_entities(
