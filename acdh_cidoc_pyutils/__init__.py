@@ -259,17 +259,19 @@ def make_ed42_identifiers(
     return g
 
 
-def make_occupations(subj: URIRef, node: Element, prefix="occupation", id_xpath=False, default_lang="de"):
+def make_occupations(
+    subj: URIRef, node: Element, prefix="occupation", id_xpath=False, default_lang="de"
+):
     g = Graph()
     occ_uris = []
     base_uri = f"{subj}/{prefix}"
-    for i, x in enumerate(node.xpath('.//tei:occupation', namespaces=NSMAP)):
+    for i, x in enumerate(node.xpath(".//tei:occupation", namespaces=NSMAP)):
         try:
             lang = x.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
         except KeyError:
             lang = default_lang
-        occ_text = normalize_string(" ".join(x.xpath('.//text()')))
-        
+        occ_text = normalize_string(" ".join(x.xpath(".//text()")))
+
         if id_xpath:
             try:
                 occ_id = x.xpath(id_xpath, namespaces=NSMAP)[0]
@@ -277,15 +279,13 @@ def make_occupations(subj: URIRef, node: Element, prefix="occupation", id_xpath=
                 pass
         else:
             occ_id = f"{i}"
-        if occ_id.startswith('#'):
+        if occ_id.startswith("#"):
             occ_id = occ_id[1:]
         occ_uri = URIRef(f"{base_uri}/{occ_id}")
         occ_uris.append(occ_uri)
         g.add((occ_uri, RDF.type, FRBROO["F51"]))
         g.add((occ_uri, RDFS.label, Literal(occ_text, lang=lang)))
-        g.add((
-            subj, CIDOC["P14i_performed"], occ_uri
-        ))
+        g.add((subj, CIDOC["P14i_performed"], occ_uri))
         begin, end = extract_begin_end(x)
         if begin or end:
             ts_uri = URIRef(f"{occ_uri}/timestamp")
@@ -294,39 +294,29 @@ def make_occupations(subj: URIRef, node: Element, prefix="occupation", id_xpath=
     return (g, occ_uris)
 
 
-def make_affiliations(subj: URIRef, node: Element, domain: str, org_id_xpath="./@ref", org_label_xpath=""):
+def make_affiliations(
+    subj: URIRef, node: Element, domain: str, org_id_xpath="./@ref", org_label_xpath=""
+):
     g = Graph()
     xml_id = node.attrib["{http://www.w3.org/XML/1998/namespace}id"]
     item_id = f"{domain}{xml_id}"
     subj = URIRef(item_id)
-    for i, x in enumerate(node.xpath('.//tei:affiliation')):
+    for i, x in enumerate(node.xpath(".//tei:affiliation")):
         try:
             affiliation_id = x.xpath(org_id_xpath, namespaces=NSMAP)[0]
         except IndexError:
             continue
-        if affiliation_id.startswith('#'):
+        if affiliation_id.startswith("#"):
             affiliation_id = affiliation_id[1:]
         org_affiliation_uri = URIRef(f"{domain}/{affiliation_id}")
         join_uri = URIRef(f"{subj}/joining/{affiliation_id}/{i}")
         leave_uri = URIRef(f"{subj}/leaving/{affiliation_id}/{i}")
-        g.add((
-            join_uri, RDF.type, CIDOC["E85_Joining"]
-        ))
-        g.add((
-            join_uri, CIDOC["P143_joined"], subj
-        ))
-        g.add((
-            join_uri, CIDOC["P144_joined_with"], org_affiliation_uri
-        ))
-        g.add((
-            leave_uri, RDF.type, CIDOC["E86_Leaving"]
-        ))
-        g.add((
-            leave_uri, CIDOC["P145_separated"], subj
-        ))
-        g.add((
-            leave_uri, CIDOC["P146_separated_from"], org_affiliation_uri
-        ))
+        g.add((join_uri, RDF.type, CIDOC["E85_Joining"]))
+        g.add((join_uri, CIDOC["P143_joined"], subj))
+        g.add((join_uri, CIDOC["P144_joined_with"], org_affiliation_uri))
+        g.add((leave_uri, RDF.type, CIDOC["E86_Leaving"]))
+        g.add((leave_uri, CIDOC["P145_separated"], subj))
+        g.add((leave_uri, CIDOC["P146_separated_from"], org_affiliation_uri))
         return g
 
 

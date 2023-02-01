@@ -14,7 +14,7 @@ from acdh_cidoc_pyutils import (
     make_ed42_identifiers,
     coordinates_to_p168,
     make_birth_death_entities,
-    make_occupations
+    make_occupations,
 )
 from acdh_cidoc_pyutils.namespaces import NSMAP, CIDOC
 
@@ -320,7 +320,11 @@ mein schatz ich liebe    dich
         for bad in x.xpath(".//tei:death", namespaces=NSMAP):
             bad.getparent().remove(bad)
         event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
-            subj, x, domain="https://foo/bar/", event_type="death", verbose=True,
+            subj,
+            x,
+            domain="https://foo/bar/",
+            event_type="death",
+            verbose=True,
         )
         new_sample = """
 <TEI xmlns="http://www.tei-c.org/ns/1.0">
@@ -345,7 +349,11 @@ mein schatz ich liebe    dich
         item_id = f"https://foo/bar/{xml_id}"
         subj = URIRef(item_id)
         event_graph, birth_uri, birth_timestamp = make_birth_death_entities(
-            subj, x, domain="https://foo/bar/", verbose=False, place_id_xpath="//tei:nonsense[1]/@key",
+            subj,
+            x,
+            domain="https://foo/bar/",
+            verbose=False,
+            place_id_xpath="//tei:nonsense[1]/@key",
         )
         event_graph.serialize("no_date.ttl")
 
@@ -366,9 +374,8 @@ mein schatz ich liebe    dich
         item_id = f"https://foo/bar/{xml_id}"
         subj = URIRef(item_id)
         g, uris = make_occupations(subj, x)
-        self.assertFalse('occupation/hansi' in g.serialize(format="turtle"))
+        self.assertFalse("occupation/hansi" in g.serialize(format="turtle"))
         g.serialize("occupations.ttl")
         g1, uris = make_occupations(subj, x, id_xpath="@key")
         g1.serialize("occupations1.ttl")
-        self.assertTrue('occupation/hansi' in g1.serialize(format="turtle"))
-        
+        self.assertTrue("occupation/hansi" in g1.serialize(format="turtle"))
