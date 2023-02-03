@@ -87,13 +87,15 @@ sample = """
 """
 
 
-DATE_STRINGS = ["1900", "-1900", "1900-01", "1901-01-01", "foo"]
+DATE_STRINGS = ["1900", "-1900", "1900-01", "1901-01-01", "foo", "", None]
 DATE_TYPES = [
     "http://www.w3.org/2001/XMLSchema#gYear",
     "http://www.w3.org/2001/XMLSchema#gYear",
     "http://www.w3.org/2001/XMLSchema#gYearMonth",
     "http://www.w3.org/2001/XMLSchema#date",
     "http://www.w3.org/2001/XMLSchema#string",
+    "None",
+    "None",
 ]
 
 
@@ -407,13 +409,17 @@ mein schatz ich liebe    dich
 <TEI xmlns="http://www.tei-c.org/ns/1.0">
     <person xml:id="DWpers0091" sortKey="Gulbransson_Olaf_Leonhard">
         <persName type="pref">Gulbransson, Olaf</persName>
-        <affiliation>
+        <affiliation notBefore-iso="1904-01-01" when-iso="1904-07-01" notAfter-iso="1904-12-31">
             <term key="1153">in Bezug zu</term>
             <orgName key="pmb46027">Akademisches Gymnasium Wien</orgName>
         </affiliation>
         <affiliation>
             <term key="1182">arbeitet für</term>
             <orgName key="pmb51868">Cabaret Fledermaus</orgName>
+        </affiliation>
+        <affiliation notAfter="1922">
+            <term key="1234">arbeitet für</term>
+            <orgName key="pmb518681">Schule</orgName>
         </affiliation>
     </person>
 </TEI>"""
