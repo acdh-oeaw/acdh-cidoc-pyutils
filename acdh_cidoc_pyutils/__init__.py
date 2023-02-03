@@ -82,18 +82,25 @@ def extract_begin_end(
     return final_start, final_end
 
 
-def date_to_literal(date_str: str) -> Literal:
-
-    if len(date_str) == 4:
-        return Literal(date_str, datatype=XSD.gYear)
-    elif len(date_str) == 5 and date_str.startswith("-"):
-        return Literal(date_str, datatype=XSD.gYear)
-    elif len(date_str) == 7:
-        return Literal(date_str, datatype=XSD.gYearMonth)
-    elif len(date_str) == 10:
-        return Literal(date_str, datatype=XSD.date)
+def date_to_literal(
+    date_str: Union[str, bool], not_known_value="unknown", default_lang="en"
+) -> Literal:
+    if date_str is None:
+        return_value = Literal(not_known_value, lang=default_lang)
+    elif date_str == "":
+        return_value = Literal(not_known_value, lang=default_lang)
     else:
-        return Literal(date_str, datatype=XSD.string)
+        if len(date_str) == 4:
+            return_value = Literal(date_str, datatype=XSD.gYear)
+        elif len(date_str) == 5 and date_str.startswith("-"):
+            return_value = Literal(date_str, datatype=XSD.gYear)
+        elif len(date_str) == 7:
+            return_value = Literal(date_str, datatype=XSD.gYearMonth)
+        elif len(date_str) == 10:
+            return_value = Literal(date_str, datatype=XSD.date)
+        else:
+            return_value = Literal(date_str, datatype=XSD.string)
+    return return_value
 
 
 def make_uri(domain="https://foo.bar/whatever", version="", prefix="") -> URIRef:
@@ -105,21 +112,69 @@ def make_uri(domain="https://foo.bar/whatever", version="", prefix="") -> URIRef
     return URIRef(uri)
 
 
-def create_e52(uri: URIRef, begin_of_begin="", end_of_end="", label=True) -> Graph:
+def create_e52(
+    uri: URIRef,
+    begin_of_begin="",
+    end_of_end="",
+    label=True,
+    not_known_value="unknown",
+    default_lang="en",
+) -> Graph:
     g = Graph()
     g.add((uri, RDF.type, CIDOC["E52_Time-Span"]))
     if begin_of_begin != "":
-        g.add((uri, CIDOC["P82a_begin_of_the_begin"], date_to_literal(begin_of_begin)))
+        g.add(
+            (
+                uri,
+                CIDOC["P82a_begin_of_the_begin"],
+                date_to_literal(
+                    begin_of_begin,
+                    not_known_value=not_known_value,
+                    default_lang=default_lang,
+                ),
+            )
+        )
     if end_of_end != "":
-        g.add((uri, CIDOC["P82b_end_of_the_end"], date_to_literal(end_of_end)))
+        g.add(
+            (
+                uri,
+                CIDOC["P82b_end_of_the_end"],
+                date_to_literal(
+                    end_of_end, not_known_value=not_known_value, default_lang=default_lang
+                ),
+            )
+        )
     if end_of_end == "" and begin_of_begin != "":
-        g.add((uri, CIDOC["P82b_end_of_the_end"], date_to_literal(begin_of_begin)))
+        g.add(
+            (
+                uri,
+                CIDOC["P82b_end_of_the_end"],
+                date_to_literal(
+                    begin_of_begin,
+                    not_known_value=not_known_value,
+                    default_lang=default_lang,
+                ),
+            )
+        )
     if begin_of_begin == "" and end_of_end != "":
-        g.add((uri, CIDOC["P82a_begin_of_the_begin"], date_to_literal(end_of_end)))
+        g.add(
+            (
+                uri,
+                CIDOC["P82a_begin_of_the_begin"],
+                date_to_literal(
+                    end_of_end, not_known_value=not_known_value, default_lang=default_lang
+                ),
+            )
+        )
     else:
         pass
     if label:
-        label_str = " - ".join([begin_of_begin, end_of_end]).strip()
+        label_str = " - ".join(
+            [
+                f"{date_to_literal(begin_of_begin, not_known_value=not_known_value, default_lang=default_lang)}",
+                f"{date_to_literal(end_of_end, not_known_value=not_known_value, default_lang=default_lang)}",
+            ]
+        ).strip()
         if label_str != "":
             g.add((uri, RDFS.label, Literal(label_str, datatype=XSD.string)))
     return g
@@ -259,39 +314,90 @@ def make_ed42_identifiers(
     return g
 
 
-def make_occupations(subj: URIRef, node: Element, domain: str, prefix="occupation", id_xpath=False, default_lang="de"):
+def make_occupations(
+    subj: URIRef, node: Element, prefix="occupation", id_xpath=False, default_lang="de"
+):
     g = Graph()
     occ_uris = []
     base_uri = f"{subj}/{prefix}"
-    for i, x in enumerate(node.xpath('.//tei:occupation', namespaces=NSMAP)):
+    for i, x in enumerate(node.xpath(".//tei:occupation", namespaces=NSMAP)):
         try:
             lang = x.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
         except KeyError:
             lang = default_lang
-        occ_text = normalize_string(" ".join(x.xpath('.//text()')))
-        occ_id = f"{i}"
+        occ_text = normalize_string(" ".join(x.xpath(".//text()")))
+
         if id_xpath:
             try:
                 occ_id = x.xpath(id_xpath, namespaces=NSMAP)[0]
             except IndexError:
                 pass
         else:
-            occ_id = occ_id
-        if occ_id.startswith('#'):
+            occ_id = f"{i}"
+        if occ_id.startswith("#"):
             occ_id = occ_id[1:]
         occ_uri = URIRef(f"{base_uri}/{occ_id}")
         occ_uris.append(occ_uri)
         g.add((occ_uri, RDF.type, FRBROO["F51"]))
         g.add((occ_uri, RDFS.label, Literal(occ_text, lang=lang)))
-        g.add((
-            subj, CIDOC["P14i_performed"], occ_uri
-        ))
-        begin, end = extract_begin_end(x)
+        g.add((subj, CIDOC["P14i_performed"], occ_uri))
+        begin, end = extract_begin_end(x, fill_missing=False)
         if begin or end:
             ts_uri = URIRef(f"{occ_uri}/timestamp")
             g.add((occ_uri, CIDOC["P4_has_time-span"], ts_uri))
             g += create_e52(ts_uri, begin_of_begin=begin, end_of_end=end)
     return (g, occ_uris)
+
+
+def make_affiliations(
+    subj: URIRef,
+    node: Element,
+    domain: str,
+    person_label: str,
+    org_id_xpath="./@ref",
+    org_label_xpath="",
+    lang="en",
+):
+    g = Graph()
+    xml_id = node.attrib["{http://www.w3.org/XML/1998/namespace}id"]
+    item_id = f"{domain}{xml_id}"
+    subj = URIRef(item_id)
+    for i, x in enumerate(node.xpath(".//tei:affiliation", namespaces=NSMAP)):
+        try:
+            affiliation_id = x.xpath(org_id_xpath, namespaces=NSMAP)[0]
+        except IndexError:
+            continue
+        if org_label_xpath == "":
+            org_label = normalize_string(" ".join(x.xpath(".//text()")))
+        else:
+            org_label = normalize_string(
+                " ".join(x.xpath(org_label_xpath, namespaces=NSMAP))
+            )
+        if affiliation_id.startswith("#"):
+            affiliation_id = affiliation_id[1:]
+        org_affiliation_uri = URIRef(f"{domain}{affiliation_id}")
+        join_uri = URIRef(f"{subj}/joining/{affiliation_id}/{i}")
+        leave_uri = URIRef(f"{subj}/leaving/{affiliation_id}/{i}")
+        join_label = f"{person_label} joins {org_label}"
+        leave_label = f"{person_label} leaves {org_label}"
+        g.add((join_uri, RDF.type, CIDOC["E85_Joining"]))
+        g.add((join_uri, CIDOC["P143_joined"], subj))
+        g.add((join_uri, CIDOC["P144_joined_with"], org_affiliation_uri))
+        g.add((join_uri, RDFS.label, Literal(join_label, lang=lang)))
+        g.add((leave_uri, RDF.type, CIDOC["E86_Leaving"]))
+        g.add((leave_uri, CIDOC["P145_separated"], subj))
+        g.add((leave_uri, CIDOC["P146_separated_from"], org_affiliation_uri))
+        g.add((leave_uri, RDFS.label, Literal(leave_label, lang=lang)))
+        begin, end = extract_begin_end(x, fill_missing=False)
+        if begin:
+            ts_uri = URIRef(f"{join_uri}/timestamp/{begin}")
+            g.add((join_uri, CIDOC["P4_has_time-span"], ts_uri))
+            g += create_e52(ts_uri, begin_of_begin=begin, end_of_end=begin)
+        if end:
+            ts_uri = URIRef(f"{leave_uri}/timestamp/{end}")
+            g.add((leave_uri, CIDOC["P4_has_time-span"], ts_uri))
+            g += create_e52(ts_uri, begin_of_begin=end, end_of_end=end)
+    return g
 
 
 def make_birth_death_entities(
@@ -343,10 +449,7 @@ def make_birth_death_entities(
         process_date = False
     if process_date:
         start, end = extract_begin_end(date_node)
-        try:
-            g += create_e52(time_stamp_uri, begin_of_begin=start, end_of_end=end)
-        except TypeError:
-            pass
+        g += create_e52(time_stamp_uri, begin_of_begin=start, end_of_end=end)
     try:
         place_node = node.xpath(place_xpath, namespaces=NSMAP)[0]
         process_place = True

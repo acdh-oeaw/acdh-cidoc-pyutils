@@ -12,6 +12,9 @@ Helper functions for the generation of CIDOC CRMish RDF (from XML/TEI data)
 
 ## Examples
 
+* For 'real-world-examples' see e.g. [semantic-kraus project](https://github.com/semantic-kraus/lk-data/blob/main/scripts/make_rdf.py)
+* also take a look into [test_cidoc_pyutils.py](https://github.com/acdh-oeaw/acdh-cidoc-pyutils/blob/main/tests/test_cidoc_pyutils.py)
+
 ### extract `cidoc:P14i_performed FRBROO:F51_ Pursuit` triples from `tei:person/tei:occupation` nodes
 ```python
 import lxml.etree as ET

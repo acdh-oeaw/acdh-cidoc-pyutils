@@ -131,11 +131,4 @@ dmypy.json
 
 # project specific
 *.ipynb
-test.ttl
-ids.ttl
-coords.ttl
-coords1.ttl
-death.ttl
-birth.ttl
-no_date.ttl
-occupations.ttl
+*.ttl
