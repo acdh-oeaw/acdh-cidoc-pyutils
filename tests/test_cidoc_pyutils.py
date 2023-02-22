@@ -10,7 +10,7 @@ from acdh_cidoc_pyutils import (
     create_e52,
     normalize_string,
     extract_begin_end,
-    make_appelations,
+    make_appellations,
     make_ed42_identifiers,
     coordinates_to_p168,
     make_birth_death_entities,
@@ -204,7 +204,7 @@ mein schatz ich liebe    dich
         self.assertEqual(begin, None)
         self.assertEqual(end, date_string)
 
-    def test_007_make_appelations(self):
+    def test_007_make_appellations(self):
         g = Graph()
         doc = ET.fromstring(sample)
         for x in doc.xpath(
@@ -214,12 +214,13 @@ mein schatz ich liebe    dich
             item_id = f"https://foo/bar/{xml_id}"
             subj = URIRef(item_id)
             g.add((subj, RDF.type, CIDOC["hansi"]))
-            g += make_appelations(
+            g += make_appellations(
                 subj, x, type_domain="http://hansi/4/ever", default_lang="it"
             )
         data = g.serialize(format="turtle")
-        # g.serialize("test.ttl", format="turtle")
+        g.serialize("appellation.ttl", format="turtle")
         self.assertTrue('rdfs:label "Stahlhelm, Bund der Frontsoldaten"@de' in data)
+        self.assertTrue('rdf:value "Stahlhelm, Bund der Frontsoldaten"' in data)
         self.assertTrue("@it" in data)
         self.assertTrue(
             "P2_has_type <http://hansi/4/ever/person/persname/forename/unused>" in data

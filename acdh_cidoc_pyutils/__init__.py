@@ -180,7 +180,7 @@ def create_e52(
     return g
 
 
-def make_appelations(
+def make_appellations(
     subj: URIRef,
     node: Element,
     type_domain="https://foo-bar/",
@@ -207,11 +207,14 @@ def make_appelations(
             lang_tag = default_lang
         type_uri = f"{base_type_uri}/{y.tag.split('}')[-1]}"
         if len(y.xpath("./*")) < 1 and y.text:
-            app_uri = URIRef(f"{subj}/appelation/{i}")
+            app_uri = URIRef(f"{subj}/appellation/{i}")
             g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
             g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
             g.add(
                 (app_uri, RDFS.label, Literal(normalize_string(y.text), lang=lang_tag))
+            )
+            g.add(
+                (app_uri, RDF.value, Literal(normalize_string(y.text)))
             )
             type_label = y.get(type_attribute)
             if type_label:
@@ -235,7 +238,7 @@ def make_appelations(
                 ]
             except KeyError:
                 child_lang_tag = lang_tag
-            app_uri = URIRef(f"{subj}/appelation/{i}/{c}")
+            app_uri = URIRef(f"{subj}/appellation/{i}/{c}")
             g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
             g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
             g.add(
@@ -243,6 +246,13 @@ def make_appelations(
                     app_uri,
                     RDFS.label,
                     Literal(normalize_string(child.text), lang=child_lang_tag),
+                )
+            )
+            g.add(
+                (
+                    app_uri,
+                    RDF.value,
+                    Literal(normalize_string(child.text)),
                 )
             )
             g.add((cur_type_uri, RDF.type, CIDOC["E55_Type"]))
