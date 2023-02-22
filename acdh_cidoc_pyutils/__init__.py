@@ -338,7 +338,7 @@ def make_occupations(
             occ_id = occ_id[1:]
         occ_uri = URIRef(f"{base_uri}/{occ_id}")
         occ_uris.append(occ_uri)
-        g.add((occ_uri, RDF.type, FRBROO["F51"]))
+        g.add((occ_uri, RDF.type, FRBROO["F51_Pursuit"]))
         g.add((occ_uri, RDFS.label, Literal(occ_text, lang=lang)))
         g.add((subj, CIDOC["P14i_performed"], occ_uri))
         begin, end = extract_begin_end(x, fill_missing=False)
