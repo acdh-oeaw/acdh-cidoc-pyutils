@@ -424,13 +424,17 @@ mein schatz ich liebe    dich
 <TEI xmlns="http://www.tei-c.org/ns/1.0">
     <person xml:id="DWpers0091" sortKey="Gulbransson_Olaf_Leonhard">
         <persName type="pref">Gulbransson, Olaf</persName>
-        <affiliation notBefore="1900" notAfter="1931">No ref</affiliation>
+        <affiliation notBefore="1900" notAfter="1931">No ref
+
+        </affiliation>
         <affiliation notBefore="1900" notAfter="1931" ref="DWorg00010" n="01">SPD</affiliation>
         <affiliation notBefore="1931" ref="#DWorg00009" n="hansi">SAPD</affiliation>
         <affiliation notBefore="1938" notAfter="1945-01-02" ref="#DWorg00010" n="03">SPD</affiliation>
     </person>
 </TEI>"""
-        person_label = "Gulbransson, Olaf"
+        person_label = """Gulbransson,
+
+        Olaf"""
         doc = ET.fromstring(sample)
         x = doc.xpath(".//tei:person[1]", namespaces=NSMAP)[0]
         xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"]
