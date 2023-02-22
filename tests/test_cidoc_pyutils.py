@@ -235,12 +235,8 @@ mein schatz ich liebe    dich
         self.assertTrue('rdfs:label "Stahlhelm, Bund der Frontsoldaten"@de' in data)
         self.assertTrue('rdf:value "Stahlhelm, Bund der Frontsoldaten"' in data)
         self.assertTrue("@it" in data)
-        self.assertTrue(
-            "P2_has_type <http://hansi/4/ever/person/persname/forename/unused>" in data
-        )
         self.assertTrue('dfs:label "Gulbransson, Olaf"' in data)
-        self.assertTrue('Leonhard"@bg' in data)
-        self.assertTrue("person/persname/forename/unused" in data)
+        self.assertTrue('rdfs:label "cosi, maxi"@it' in data)
 
     def test_008_make_e42_identifiers(self):
         g = Graph()

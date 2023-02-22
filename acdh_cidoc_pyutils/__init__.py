@@ -229,40 +229,54 @@ def make_appellations(
             if type_label:
                 g.add((cur_type_uri, RDFS.label, Literal(type_label)))
             g.add((app_uri, CIDOC["P2_has_type"], cur_type_uri))
-        for c, child in enumerate(y.xpath("./*")):
-            cur_type_uri = f"{type_uri}/{child.tag.split('}')[-1]}".lower()
-            type_label = child.get(type_attribute)
-            if type_label:
-                cur_type_uri = URIRef(f"{cur_type_uri}/{slugify(type_label)}".lower())
-            else:
-                cur_type_uri = URIRef(cur_type_uri.lower())
-            try:
-                child_lang_tag = child.attrib[
-                    "{http://www.w3.org/XML/1998/namespace}lang"
-                ]
-            except KeyError:
-                child_lang_tag = lang_tag
-            app_uri = URIRef(f"{subj}/appellation/{i}/{c}")
+        elif len(y.xpath("./*")) > 1:
+            app_uri = URIRef(f"{subj}/appellation/{i}")
             g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
             g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
-            g.add(
-                (
-                    app_uri,
-                    RDFS.label,
-                    Literal(normalize_string(child.text), lang=child_lang_tag),
-                )
+            entity_label_str, cur_lang = make_entity_label(
+                y, default_lang=default_lang
             )
             g.add(
-                (
-                    app_uri,
-                    RDF.value,
-                    Literal(normalize_string(child.text)),
-                )
+                (app_uri, RDFS.label, Literal(normalize_string(entity_label_str), lang=cur_lang))
             )
+            cur_type_uri = URIRef(f"{type_uri.lower()}")
             g.add((cur_type_uri, RDF.type, CIDOC["E55_Type"]))
-            if type_label:
-                g.add((cur_type_uri, RDFS.label, Literal(type_label)))
             g.add((app_uri, CIDOC["P2_has_type"], cur_type_uri))
+        # see https://github.com/acdh-oeaw/acdh-cidoc-pyutils/issues/36
+        # for c, child in enumerate(y.xpath("./*")):
+        #     cur_type_uri = f"{type_uri}/{child.tag.split('}')[-1]}".lower()
+        #     type_label = child.get(type_attribute)
+        #     if type_label:
+        #         cur_type_uri = URIRef(f"{cur_type_uri}/{slugify(type_label)}".lower())
+        #     else:
+        #         cur_type_uri = URIRef(cur_type_uri.lower())
+        #     try:
+        #         child_lang_tag = child.attrib[
+        #             "{http://www.w3.org/XML/1998/namespace}lang"
+        #         ]
+        #     except KeyError:
+        #         child_lang_tag = lang_tag
+        #     app_uri = URIRef(f"{subj}/appellation/{i}/{c}")
+        #     g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
+        #     g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
+        #     g.add(
+        #         (
+        #             app_uri,
+        #             RDFS.label,
+        #             Literal(normalize_string(child.text), lang=child_lang_tag),
+        #         )
+        #     )
+        #     g.add(
+        #         (
+        #             app_uri,
+        #             RDF.value,
+        #             Literal(normalize_string(child.text)),
+        #         )
+        #     )
+        #     g.add((cur_type_uri, RDF.type, CIDOC["E55_Type"]))
+        #     if type_label:
+        #         g.add((cur_type_uri, RDFS.label, Literal(type_label)))
+        #     g.add((app_uri, CIDOC["P2_has_type"], cur_type_uri))
     try:
         first_name_el = node.xpath(xpath_expression, namespaces=NSMAP)[0]
     except IndexError:
