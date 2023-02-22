@@ -276,7 +276,8 @@ def make_e42_identifiers(
     type_domain="https://foo-bar/",
     default_lang="de",
     set_lang=False,
-    same_as=True
+    same_as=True,
+    default_prefix="Identifier: "
 ) -> Graph:
     g = Graph()
     try:
@@ -288,6 +289,7 @@ def make_e42_identifiers(
     else:
         lang = "und"
     xml_id = node.attrib["{http://www.w3.org/XML/1998/namespace}id"]
+    label_value = normalize_string(f"{default_prefix}{xml_id}")
     if not type_domain.endswith("/"):
         type_domain = f"{type_domain}/"
     app_uri = URIRef(f"{subj}/identifier/{xml_id}")
@@ -295,7 +297,8 @@ def make_e42_identifiers(
     g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
     g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
     g.add((app_uri, RDF.type, CIDOC["E42_Identifier"]))
-    g.add((app_uri, RDFS.label, Literal(xml_id, lang=lang)))
+    g.add((app_uri, RDFS.label, Literal(label_value, lang=lang)))
+    g.add((app_uri, RDF.value, Literal(normalize_string(xml_id))))
     g.add((app_uri, CIDOC["P2_has_type"], type_uri))
     for i, x in enumerate(node.xpath(".//tei:idno", namespaces=NSMAP)):
         idno_type_base_uri = f"{type_domain}idno"
@@ -311,7 +314,9 @@ def make_e42_identifiers(
             g.add((idno_uri, RDF.type, CIDOC["E42_Identifier"]))
             g.add((idno_uri, CIDOC["P2_has_type"], URIRef(idno_type_base_uri)))
             g.add((URIRef(idno_type_base_uri), RDF.type, CIDOC["E55_Type"]))
-            g.add((idno_uri, RDFS.label, Literal(x.text, lang=lang)))
+            label_value = normalize_string(f"{default_prefix}{x.text}")
+            g.add((idno_uri, RDFS.label, Literal(label_value, lang=lang)))
+            g.add((idno_uri, RDF.value, Literal(normalize_string(x.text))))
             if same_as:
                 if x.text.startswith("http"):
                     g.add(

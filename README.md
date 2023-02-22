@@ -259,7 +259,7 @@ for x in doc.xpath(".//tei:place|tei:org|tei:person|tei:bibl", namespaces=NSMAP)
     subj = URIRef(item_id)
     g.add((subj, RDF.type, CIDOC["E53_Place"]))
     g += make_e42_identifiers(
-        subj, x, type_domain="http://hansi/4/ever", default_lang="it"
+        subj, x, type_domain="http://hansi/4/ever", default_lang="it",
     )
 print(g.serialize(format="turtle"))
 # returns
@@ -286,19 +286,23 @@ print(g.serialize(format="turtle"))
 <http://hansi/4/ever/xml-id> a ns1:E55_Type .
 
 <https://foo/bar/dwplace00092/identifier/DWplace00092> a ns1:E42_Identifier ;
-    rdfs:label "DWplace00092"@it ;
+    rdfs:label "Identifier: DWplace00092"@it ;
+    rdf:value "DWplace00092";
     ns1:P2_has_type <http://hansi/4/ever/xml-id> .
 
 <https://foo/bar/dwplace00092/identifier/idno/0> a ns1:E42_Identifier ;
-    rdfs:label "https://pmb.acdh.oeaw.ac.at/entity/42085/"@it ;
+    rdfs:label "Identifier: https://pmb.acdh.oeaw.ac.at/entity/42085/"@it ;
+    rdf:value "https://pmb.acdh.oeaw.ac.at/entity/42085/";
     ns1:P2_has_type <http://hansi/4/ever/idno/pmb> .
 
 <https://foo/bar/dwplace00092/identifier/idno/1> a ns1:E42_Identifier ;
-    rdfs:label "https://www.geonames.org/588409"@it ;
+    rdfs:label "Identifier: https://www.geonames.org/588409"@it ;
+    rdf:value "https://www.geonames.org/588409" 
     ns1:P2_has_type <http://hansi/4/ever/idno/URI/geonames> .
 
 <https://foo/bar/dwplace00092/identifier/idno/2> a ns1:E42_Identifier ;
-    rdfs:label "12345"@it ;
+    rdfs:label "Identifier: 12345"@it ;
+    rdf:value "12345";
     ns1:P2_has_type <http://hansi/4/ever/idno/foobarid> .
 ```
 
