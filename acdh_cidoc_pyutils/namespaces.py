@@ -1,7 +1,7 @@
 from rdflib import Namespace
 
 CIDOC = Namespace("http://www.cidoc-crm.org/cidoc-crm/")
-FRBROO = Namespace("http://iflastandards.info/ns/fr/frbr/frbroo#")
+FRBROO = Namespace("https://cidoc-crm.org/frbroo/sites/default/files/FRBR2.4-draft.rdfs#")
 
 NSMAP = {
     "tei": "http://www.tei-c.org/ns/1.0",
