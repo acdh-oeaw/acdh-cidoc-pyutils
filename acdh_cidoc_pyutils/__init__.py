@@ -83,7 +83,7 @@ def extract_begin_end(
 
 
 def date_to_literal(
-    date_str: Union[str, bool], not_known_value="unknown", default_lang="en"
+    date_str: Union[str, bool], not_known_value="undefined", default_lang="en"
 ) -> Literal:
     if date_str is None:
         return_value = Literal(not_known_value, lang=default_lang)
@@ -117,7 +117,7 @@ def create_e52(
     begin_of_begin="",
     end_of_end="",
     label=True,
-    not_known_value="unknown",
+    not_known_value="undefined",
     default_lang="en",
 ) -> Graph:
     g = Graph()
@@ -336,7 +336,7 @@ def make_e42_identifiers(
 
 
 def make_occupations(
-    subj: URIRef, node: Element, prefix="occupation", id_xpath=False, default_lang="de"
+    subj: URIRef, node: Element, prefix="occupation", id_xpath=False, default_lang="de", not_known_value="undefined"
 ):
     g = Graph()
     occ_uris = []
@@ -366,7 +366,7 @@ def make_occupations(
         if begin or end:
             ts_uri = URIRef(f"{occ_uri}/times-span")
             g.add((occ_uri, CIDOC["P4_has_time-span"], ts_uri))
-            g += create_e52(ts_uri, begin_of_begin=begin, end_of_end=end)
+            g += create_e52(ts_uri, begin_of_begin=begin, end_of_end=end, not_known_value=not_known_value)
     return (g, occ_uris)
 
 
