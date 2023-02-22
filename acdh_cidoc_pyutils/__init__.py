@@ -176,7 +176,11 @@ def create_e52(
             ]
         ).strip()
         if label_str != "":
-            g.add((uri, RDFS.label, Literal(label_str, datatype=XSD.string)))
+            start, end = label_str.split(" - ")
+            if start == end:
+                g.add((uri, RDFS.label, Literal(start, datatype=XSD.string)))
+            else:
+                g.add((uri, RDFS.label, Literal(label_str, datatype=XSD.string)))
     return g
 
 

@@ -134,6 +134,13 @@ class TestTestTest(unittest.TestCase):
         self.assertTrue(begin_of_begin in graph_string)
         e52 = create_e52(uri, end_of_end=begin_of_begin)
         self.assertTrue(begin_of_begin in graph_string)
+        e52 = create_e52(uri, begin_of_begin=begin_of_begin, end_of_end=begin_of_begin)
+        e52.serialize('e52.ttl')
+        self.assertTrue('rdfs:label "1234-05-06"^^xsd:string' in f"{e52.serialize()}")
+        e52 = create_e52(uri, begin_of_begin="1222", end_of_end=begin_of_begin)
+        e52.serialize('e52.ttl')
+        self.assertFalse('rdfs:label "1234-05-06"^^xsd:string' in f"{e52.serialize()}")
+        e52.serialize('e521.ttl')
 
     def test_005_normalize_string(self):
         string = """\n\nhallo
