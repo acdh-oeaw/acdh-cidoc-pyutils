@@ -83,6 +83,12 @@ sample = """
     <person xml:id="hansi12343">
         <test></test>
     </person>
+    <person xml:id="onlypersnameelement">
+        <persName>Ronja, Hanna</persName>
+    </person>
+    <person xml:id="maxicosi">
+        <persName><forename>maxi</forename><surname>cosi</surname></persName>
+    </person>
 </TEI>
 """
 
