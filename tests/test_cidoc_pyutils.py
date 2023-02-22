@@ -411,9 +411,10 @@ mein schatz ich liebe    dich
         g, uris = make_occupations(subj, x)
         self.assertFalse("occupation/hansi" in g.serialize(format="turtle"))
         g.serialize("occupations.ttl")
-        g1, uris = make_occupations(subj, x, id_xpath="@key")
+        g1, uris = make_occupations(subj, x, id_xpath="@key", not_known_value="ronjaundhanna")
         g1.serialize("occupations1.ttl")
         self.assertTrue("occupation/hansi" in g1.serialize(format="turtle"))
+        self.assertTrue("ronjaundhanna" in g1.serialize(format="turtle"))
 
     def test_012_affiliations(self):
         domain = "https://foo/bar/"
