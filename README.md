@@ -52,18 +52,18 @@ print(g.serialize())
 
 <https://foo/bar/DWpers0091/occupation/hansi> a <http://iflastandards.info/ns/fr/frbr/frbroo#F51> ;
     rdfs:label "Bürgermeister"@it ;
-    ns1:P4_has_time-span <https://foo/bar/DWpers0091/occupation/hansi/timestamp> .
+    ns1:P4_has_time-span <https://foo/bar/DWpers0091/occupation/hansi/time-span> .
 
-<https://foo/bar/DWpers0091/occupation/hansi/timestamp> a ns1:E52_Time-Span ;
+<https://foo/bar/DWpers0091/occupation/hansi/time-span> a ns1:E52_Time-Span ;
     rdfs:label "1900-12 - 2000"^^xsd:string ;
     ns1:P82a_begin_of_the_begin "1900-12"^^xsd:gYearMonth ;
     ns1:P82b_end_of_the_end "2000"^^xsd:gYear .
 
 <https://foo/bar/DWpers0091/occupation/sumsi> a <http://iflastandards.info/ns/fr/frbr/frbroo#F51> ;
     rdfs:label "Tischlermeister/Fleischhauer"@de ;
-    ns1:P4_has_time-span <https://foo/bar/DWpers0091/occupation/sumsi/timestamp> .
+    ns1:P4_has_time-span <https://foo/bar/DWpers0091/occupation/sumsi/time-span> .
 
-<https://foo/bar/DWpers0091/occupation/sumsi/timestamp> a ns1:E52_Time-Span ;
+<https://foo/bar/DWpers0091/occupation/sumsi/time-span> a ns1:E52_Time-Span ;
     rdfs:label "1233-02-03 - 1233-02-03"^^xsd:string ;
     ns1:P82a_begin_of_the_begin "1233-02-03"^^xsd:date ;
     ns1:P82b_end_of_the_end "1233-02-03"^^xsd:date .
@@ -116,11 +116,11 @@ event_graph.serialize(format="turtle")
 
 <https://foo/bar/dwpers0091/birth> a ns1:E67_Birth ;
     rdfs:label "Geburt von Gulbransson, Olaf Leonhard"@fr ;
-    ns1:P4_has_time-span <https://foo/bar/dwpers0091/birth/timestamp> ;
+    ns1:P4_has_time-span <https://foo/bar/dwpers0091/birth/time-span> ;
     ns1:P7_took_place_at <https://foo/bar/DWplace00139> ;
     ns1:P98_brought_into_life <https://foo/bar/dwpers0091> .
 
-<https://foo/bar/dwpers0091/birth/timestamp> a ns1:E52_Time-Span ;
+<https://foo/bar/dwpers0091/birth/time-span> a ns1:E52_Time-Span ;
     rdfs:label "1873-05-26 - 1873-05-26"^^xsd:string ;
     ns1:P82a_begin_of_the_begin "1873-05-26"^^xsd:date ;
     ns1:P82b_end_of_the_end "1873-05-26"^^xsd:date .
@@ -131,9 +131,9 @@ event_graph.serialize(format="turtle")
     rdfs:label "Geburt von Gulbransson, Olaf Leonhard"@fr ;
     ns1:P100_was_death_of <https://foo/bar/dwpers0091> ;
     ns1:P7_took_place_at <https://foo/bar/pmb50>
-    ns1:P4_has_time-span <https://foo/bar/dwpers0091/death/timestamp> .
+    ns1:P4_has_time-span <https://foo/bar/dwpers0091/death/time-span> .
 
-<https://foo/bar/dwpers0091/death/timestamp> a ns1:E52_Time-Span ;
+<https://foo/bar/dwpers0091/death/time-span> a ns1:E52_Time-Span ;
     rdfs:label "1905-07-04 - 2000"^^xsd:string ;
     ns1:P82a_begin_of_the_begin "1905-07-04"^^xsd:date ;
     ns1:P82b_end_of_the_end "2000"^^xsd:gYear .
