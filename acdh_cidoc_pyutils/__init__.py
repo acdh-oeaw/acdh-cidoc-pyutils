@@ -412,7 +412,7 @@ def make_affiliations(
             affiliation_id = affiliation_id[1:]
         org_affiliation_uri = URIRef(f"{domain}{affiliation_id}")
         join_uri = URIRef(f"{subj}/joining/{affiliation_id}/{i}")
-        join_label = f"{person_label} joins {org_label}"
+        join_label = normalize_string(f"{person_label} joins {org_label}")
         g.add((join_uri, RDF.type, CIDOC["E85_Joining"]))
         g.add((join_uri, CIDOC["P143_joined"], subj))
         g.add((join_uri, CIDOC["P144_joined_with"], org_affiliation_uri))
@@ -425,7 +425,7 @@ def make_affiliations(
             g += create_e52(ts_uri, begin_of_begin=begin, end_of_end=begin)
         if end:
             leave_uri = URIRef(f"{subj}/leaving/{affiliation_id}/{i}")
-            leave_label = f"{person_label} leaves {org_label}"
+            leave_label = normalize_string(f"{person_label} leaves {org_label}")
             g.add((leave_uri, RDF.type, CIDOC["E86_Leaving"]))
             g.add((leave_uri, CIDOC["P145_separated"], subj))
             g.add((leave_uri, CIDOC["P146_separated_from"], org_affiliation_uri))
