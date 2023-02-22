@@ -260,6 +260,8 @@ mein schatz ich liebe    dich
             self.assertTrue("owl:sameAs <https://" in data)
             g.serialize("ids.ttl", format="turtle")
         g = Graph()
+        default_prefix = "sumsibumsi 123: "
+        match_value = 'rdf:value "DWpl'
         for x in doc.xpath(".//tei:org|tei:place", namespaces=NSMAP):
             xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
             item_id = f"https://foo/bar/{xml_id}"
@@ -271,12 +273,15 @@ mein schatz ich liebe    dich
                 type_domain="http://hansi/4/ever",
                 default_lang="it",
                 set_lang=True,
-                same_as=False
+                same_as=False,
+                default_prefix=default_prefix
             )
             data = g.serialize(format="turtle")
             self.assertTrue("@it" in data)
             self.assertTrue("idno/foobarid" in data)
+            self.assertTrue(default_prefix in data)
             self.assertFalse("owl:sameAs <https://" in data)
+            self.assertTrue(match_value in data)
             g.serialize("ids.ttl", format="turtle")
 
     def test_009_coordinates(self):
