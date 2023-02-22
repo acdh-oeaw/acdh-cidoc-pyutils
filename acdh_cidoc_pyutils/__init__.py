@@ -398,23 +398,24 @@ def make_affiliations(
             affiliation_id = affiliation_id[1:]
         org_affiliation_uri = URIRef(f"{domain}{affiliation_id}")
         join_uri = URIRef(f"{subj}/joining/{affiliation_id}/{i}")
-        leave_uri = URIRef(f"{subj}/leaving/{affiliation_id}/{i}")
         join_label = f"{person_label} joins {org_label}"
-        leave_label = f"{person_label} leaves {org_label}"
         g.add((join_uri, RDF.type, CIDOC["E85_Joining"]))
         g.add((join_uri, CIDOC["P143_joined"], subj))
         g.add((join_uri, CIDOC["P144_joined_with"], org_affiliation_uri))
         g.add((join_uri, RDFS.label, Literal(join_label, lang=lang)))
-        g.add((leave_uri, RDF.type, CIDOC["E86_Leaving"]))
-        g.add((leave_uri, CIDOC["P145_separated"], subj))
-        g.add((leave_uri, CIDOC["P146_separated_from"], org_affiliation_uri))
-        g.add((leave_uri, RDFS.label, Literal(leave_label, lang=lang)))
+
         begin, end = extract_begin_end(x, fill_missing=False)
         if begin:
             ts_uri = URIRef(f"{join_uri}/times-span/{begin}")
             g.add((join_uri, CIDOC["P4_has_time-span"], ts_uri))
             g += create_e52(ts_uri, begin_of_begin=begin, end_of_end=begin)
         if end:
+            leave_uri = URIRef(f"{subj}/leaving/{affiliation_id}/{i}")
+            leave_label = f"{person_label} leaves {org_label}"
+            g.add((leave_uri, RDF.type, CIDOC["E86_Leaving"]))
+            g.add((leave_uri, CIDOC["P145_separated"], subj))
+            g.add((leave_uri, CIDOC["P146_separated_from"], org_affiliation_uri))
+            g.add((leave_uri, RDFS.label, Literal(leave_label, lang=lang)))
             ts_uri = URIRef(f"{leave_uri}/times-span/{end}")
             g.add((leave_uri, CIDOC["P4_has_time-span"], ts_uri))
             g += create_e52(ts_uri, begin_of_begin=end, end_of_end=end)
