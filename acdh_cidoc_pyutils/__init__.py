@@ -270,7 +270,7 @@ def make_appellations(
     return g
 
 
-def make_ed42_identifiers(
+def make_e42_identifiers(
     subj: URIRef,
     node: Element,
     type_domain="https://foo-bar/",
