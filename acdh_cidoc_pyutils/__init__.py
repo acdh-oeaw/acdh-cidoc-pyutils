@@ -270,12 +270,13 @@ def make_appellations(
     return g
 
 
-def make_ed42_identifiers(
+def make_e42_identifiers(
     subj: URIRef,
     node: Element,
     type_domain="https://foo-bar/",
     default_lang="de",
     set_lang=False,
+    same_as=True
 ) -> Graph:
     g = Graph()
     try:
@@ -311,16 +312,17 @@ def make_ed42_identifiers(
             g.add((idno_uri, CIDOC["P2_has_type"], URIRef(idno_type_base_uri)))
             g.add((URIRef(idno_type_base_uri), RDF.type, CIDOC["E55_Type"]))
             g.add((idno_uri, RDFS.label, Literal(x.text, lang=lang)))
-            if x.text.startswith("http"):
-                g.add(
-                    (
-                        subj,
-                        OWL.sameAs,
-                        URIRef(
-                            x.text,
-                        ),
+            if same_as:
+                if x.text.startswith("http"):
+                    g.add(
+                        (
+                            subj,
+                            OWL.sameAs,
+                            URIRef(
+                                x.text,
+                            ),
+                        )
                     )
-                )
     return g
 
 

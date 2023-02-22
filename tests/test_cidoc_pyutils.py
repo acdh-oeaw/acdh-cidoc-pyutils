@@ -11,7 +11,7 @@ from acdh_cidoc_pyutils import (
     normalize_string,
     extract_begin_end,
     make_appellations,
-    make_ed42_identifiers,
+    make_e42_identifiers,
     coordinates_to_p168,
     make_birth_death_entities,
     make_occupations,
@@ -229,7 +229,7 @@ mein schatz ich liebe    dich
         self.assertTrue('Leonhard"@bg' in data)
         self.assertTrue("person/persname/forename/unused" in data)
 
-    def test_008_make_ed42_identifiers(self):
+    def test_008_make_e42_identifiers(self):
         g = Graph()
         doc = ET.fromstring(sample)
         for x in doc.xpath(".//tei:org|tei:place", namespaces=NSMAP):
@@ -237,7 +237,7 @@ mein schatz ich liebe    dich
             item_id = f"https://foo/bar/{xml_id}"
             subj = URIRef(item_id)
             g.add((subj, RDF.type, CIDOC["hansi"]))
-            g += make_ed42_identifiers(
+            g += make_e42_identifiers(
                 subj, x, type_domain="http://hansi/4/ever", default_lang="it"
             )
             data = g.serialize(format="turtle")
@@ -247,7 +247,7 @@ mein schatz ich liebe    dich
             item_id = f"https://foo/bar/{xml_id}"
             subj = URIRef(item_id)
             g.add((subj, RDF.type, CIDOC["hansi"]))
-            g += make_ed42_identifiers(
+            g += make_e42_identifiers(
                 subj,
                 x,
                 type_domain="http://hansi/4/ever",
@@ -258,6 +258,25 @@ mein schatz ich liebe    dich
             self.assertTrue("@it" in data)
             self.assertTrue("idno/foobarid" in data)
             self.assertTrue("owl:sameAs <https://" in data)
+            g.serialize("ids.ttl", format="turtle")
+        g = Graph()
+        for x in doc.xpath(".//tei:org|tei:place", namespaces=NSMAP):
+            xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
+            item_id = f"https://foo/bar/{xml_id}"
+            subj = URIRef(item_id)
+            g.add((subj, RDF.type, CIDOC["hansi"]))
+            g += make_e42_identifiers(
+                subj,
+                x,
+                type_domain="http://hansi/4/ever",
+                default_lang="it",
+                set_lang=True,
+                same_as=False
+            )
+            data = g.serialize(format="turtle")
+            self.assertTrue("@it" in data)
+            self.assertTrue("idno/foobarid" in data)
+            self.assertFalse("owl:sameAs <https://" in data)
             g.serialize("ids.ttl", format="turtle")
 
     def test_009_coordinates(self):

@@ -238,7 +238,7 @@ takes a tei:person|place|org node, extracts their `@xml:id` and all `tei:idno` e
 ```python
 import lxml.etree as ET
 from rdflib import Graph, URIRef, RDF
-from acdh_cidoc_pyutils import make_ed42_identifiers, NSMAP, CIDOC
+from acdh_cidoc_pyutils import make_e42_identifiers, NSMAP, CIDOC
 sample = """
 <TEI xmlns="http://www.tei-c.org/ns/1.0">
     <place xml:id="DWplace00092">
@@ -258,7 +258,7 @@ for x in doc.xpath(".//tei:place|tei:org|tei:person|tei:bibl", namespaces=NSMAP)
     item_id = f"https://foo/bar/{xml_id}"
     subj = URIRef(item_id)
     g.add((subj, RDF.type, CIDOC["E53_Place"]))
-    g += make_ed42_identifiers(
+    g += make_e42_identifiers(
         subj, x, type_domain="http://hansi/4/ever", default_lang="it"
     )
 print(g.serialize(format="turtle"))
