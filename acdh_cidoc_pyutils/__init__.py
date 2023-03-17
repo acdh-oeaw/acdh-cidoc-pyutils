@@ -311,7 +311,7 @@ def make_e42_identifiers(
     if not type_domain.endswith("/"):
         type_domain = f"{type_domain}/"
     app_uri = URIRef(f"{subj}/identifier/{xml_id}")
-    type_uri = URIRef(f"{type_domain}xml-id")
+    type_uri = URIRef(f"{type_domain}idno/xml-id")
     g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
     g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
     g.add((app_uri, RDF.type, CIDOC["E42_Identifier"]))
