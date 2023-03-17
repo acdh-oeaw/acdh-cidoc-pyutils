@@ -228,7 +228,7 @@ mein schatz ich liebe    dich
             subj = URIRef(item_id)
             g.add((subj, RDF.type, CIDOC["hansi"]))
             g += make_appellations(
-                subj, x, type_domain="http://hansi/4/ever", default_lang="it"
+                subj, x, type_domain="https://sk.acdh.oeaw.ac.at/types", default_lang="it"
             )
         data = g.serialize(format="turtle")
         g.serialize("appellation.ttl", format="turtle")
@@ -247,7 +247,7 @@ mein schatz ich liebe    dich
             subj = URIRef(item_id)
             g.add((subj, RDF.type, CIDOC["hansi"]))
             g += make_e42_identifiers(
-                subj, x, type_domain="http://hansi/4/ever", default_lang="it"
+                subj, x, type_domain="https://sk.acdh.oeaw.ac.at/types", default_lang="it"
             )
             data = g.serialize(format="turtle")
         g = Graph()
@@ -259,7 +259,7 @@ mein schatz ich liebe    dich
             g += make_e42_identifiers(
                 subj,
                 x,
-                type_domain="http://hansi/4/ever",
+                type_domain="https://sk.acdh.oeaw.ac.at/types",
                 default_lang="it",
                 set_lang=True,
             )
@@ -279,7 +279,7 @@ mein schatz ich liebe    dich
             g += make_e42_identifiers(
                 subj,
                 x,
-                type_domain="http://hansi/4/ever",
+                type_domain="https://sk.acdh.oeaw.ac.at/types",
                 default_lang="it",
                 set_lang=True,
                 same_as=False,
