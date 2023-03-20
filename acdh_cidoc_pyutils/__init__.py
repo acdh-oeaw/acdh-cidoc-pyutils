@@ -378,7 +378,7 @@ def make_occupations(
         g.add((subj, CIDOC["P14i_performed"], occ_uri))
         begin, end = extract_begin_end(x, fill_missing=False)
         if begin or end:
-            ts_uri = URIRef(f"{occ_uri}/times-span")
+            ts_uri = URIRef(f"{occ_uri}/time-span")
             g.add((occ_uri, CIDOC["P4_has_time-span"], ts_uri))
             g += create_e52(ts_uri, begin_of_begin=begin, end_of_end=end, not_known_value=not_known_value)
     return (g, occ_uris)
@@ -420,7 +420,7 @@ def make_affiliations(
 
         begin, end = extract_begin_end(x, fill_missing=False)
         if begin:
-            ts_uri = URIRef(f"{join_uri}/times-span/{begin}")
+            ts_uri = URIRef(f"{join_uri}/time-span/{begin}")
             g.add((join_uri, CIDOC["P4_has_time-span"], ts_uri))
             g += create_e52(ts_uri, begin_of_begin=begin, end_of_end=begin)
         if end:
@@ -430,7 +430,7 @@ def make_affiliations(
             g.add((leave_uri, CIDOC["P145_separated"], subj))
             g.add((leave_uri, CIDOC["P146_separated_from"], org_affiliation_uri))
             g.add((leave_uri, RDFS.label, Literal(leave_label, lang=lang)))
-            ts_uri = URIRef(f"{leave_uri}/times-span/{end}")
+            ts_uri = URIRef(f"{leave_uri}/time-span/{end}")
             g.add((leave_uri, CIDOC["P4_has_time-span"], ts_uri))
             g += create_e52(ts_uri, begin_of_begin=end, end_of_end=end)
     return g
@@ -471,7 +471,7 @@ def make_birth_death_entities(
             print(subj, e)
             return (g, None, None)
     event_uri = URIRef(f"{subj}/{event_type}")
-    time_stamp_uri = URIRef(f"{event_uri}/times-span")
+    time_stamp_uri = URIRef(f"{event_uri}/time-span")
     g.set((event_uri, cidoc_property, subj))
     g.set((event_uri, RDF.type, cidoc_class))
     g.add(
