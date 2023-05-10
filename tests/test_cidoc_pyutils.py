@@ -29,6 +29,7 @@ sample = """
         </persName>
         <birth when="1873-05-26">26. 5. 1873<placeName key="#DWplace00139"
                 >Christiania (Oslo)</placeName></birth>
+        <sex value="male"/>
         <death>
             <date notBefore-iso="1905-07-04" when="1955" to="2000">04.07.1905</date>
             <settlement key="pmb50">
@@ -88,6 +89,10 @@ sample = """
     </person>
     <person xml:id="maxicosi">
         <persName><forename>maxi</forename><surname>cosi</surname></persName>
+    </person>
+    <person xml:id="gender_test">
+        <persName><forename>testtest</forename><surname>testestters</surname></persName>
+        <sex value="diverse"/>
     </person>
 </TEI>
 """

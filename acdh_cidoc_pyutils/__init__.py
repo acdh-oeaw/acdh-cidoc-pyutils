@@ -184,6 +184,15 @@ def create_e52(
     return g
 
 
+def add_gender(tag_name, tag, appellation_uri, base_type_uri, graph):
+    if tag_name.endswith("person"):
+        try:
+            gender = tag.xpath(".//tei:sex/@value", namespaces=NSMAP)[0]
+            graph.add((appellation_uri, CIDOC["P2_has_Type"], URIRef(f"{base_type_uri}/persname/{gender}")))
+        except IndexError:
+            pass
+
+
 def make_appellations(
     subj: URIRef,
     node: Element,
@@ -214,6 +223,7 @@ def make_appellations(
             app_uri = URIRef(f"{subj}/appellation/{i}")
             g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
             g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
+            add_gender(tag_name, node, app_uri, base_type_uri, g)
             g.add(
                 (app_uri, RDFS.label, Literal(normalize_string(y.text), lang=lang_tag))
             )
@@ -233,6 +243,7 @@ def make_appellations(
             app_uri = URIRef(f"{subj}/appellation/{i}")
             g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
             g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
+            add_gender(tag_name, node, app_uri, base_type_uri, g)
             entity_label_str, cur_lang = make_entity_label(
                 y, default_lang=default_lang
             )
