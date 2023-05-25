@@ -203,7 +203,7 @@ def make_appellations(
     if tag_name.endswith("place"):
         xpath_expression = ".//tei:placeName"
     elif tag_name.endswith("person"):
-        xpath_expression = ".//tei:persName"
+        xpath_expression = ".//tei:persName[@type='sk']"
     elif tag_name.endswith("org"):
         xpath_expression = ".//tei:orgName"
     else:
