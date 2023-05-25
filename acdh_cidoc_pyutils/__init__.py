@@ -119,6 +119,8 @@ def create_e52(
     label=True,
     not_known_value="undefined",
     default_lang="en",
+    time_span_type=None,
+    domain=None,
 ) -> Graph:
     g = Graph()
     g.add((uri, RDF.type, CIDOC["E52_Time-Span"]))
@@ -181,6 +183,8 @@ def create_e52(
                 g.add((uri, RDFS.label, Literal(start, datatype=XSD.string)))
             else:
                 g.add((uri, RDFS.label, Literal(label_str, datatype=XSD.string)))
+    if time_span_type:
+        g.add((uri, CIDOC["P2_has_type"], URIRef(f"{domain}types/date/{time_span_type}")))
     return g
 
 
@@ -312,6 +316,9 @@ def make_e42_identifiers(
         type_domain = f"{type_domain}/"
     app_uri = URIRef(f"{subj}/identifier/{xml_id}")
     type_uri = URIRef(f"{type_domain}idno/xml-id")
+    approx_uri = URIRef(f"{type_domain}date/approx")
+    g.add((approx_uri, RDF.type, CIDOC["E55_Type"])) # time_span approx type
+    g.add((approx_uri, RDFS.label, Literal("approx"))) # time_span approx label
     g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
     g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
     g.add((app_uri, RDF.type, CIDOC["E42_Identifier"]))
@@ -446,6 +453,7 @@ def make_birth_death_entities(
     default_lang="de",
     date_node_xpath="",
     place_id_xpath="//tei:placeName/@key",
+    time_span_type=None,
 ):
     g = Graph()
     name_node = node.xpath(".//tei:persName[1]", namespaces=NSMAP)[0]
@@ -485,7 +493,8 @@ def make_birth_death_entities(
         process_date = False
     if process_date:
         start, end = extract_begin_end(date_node)
-        g += create_e52(time_stamp_uri, begin_of_begin=start, end_of_end=end)
+        g += create_e52(time_stamp_uri, begin_of_begin=start, end_of_end=end,
+                        time_span_type=time_span_type, domain=domain)
     try:
         place_node = node.xpath(place_xpath, namespaces=NSMAP)[0]
         process_place = True
