@@ -506,3 +506,64 @@ def make_birth_death_entities(
         place_uri = URIRef(f"{domain}{place_node}")
         g.add((event_uri, CIDOC["P7_took_place_at"], place_uri))
     return (g, event_uri, time_stamp_uri)
+
+
+def make_events(
+    subj: URIRef,
+    node: Element,
+    type_domain: str,
+    event_type_xpath=".//tei:event[@type]/@type",
+    verbose=False,
+    default_prefix="Event:",
+    default_lang="de",
+    date_node_xpath=".//tei:desc/tei:date[@when]/when",
+    place_id_xpath=".//tei:desc/tei:placeName/@key",
+    note_literal_xpath=".//tei:note",
+):
+    g = Graph()
+    xml_id = node.attrib["{http://www.w3.org/XML/1998/namespace}id"]
+    item_id = f"{type_domain}/{xml_id}"
+    subj = URIRef(item_id)
+    for i, x in enumerate(node.xpath(".//tei:event", namespaces=NSMAP)):
+        if note_literal_xpath == "":
+            note_label = normalize_string(" ".join(x.xpath(".//text()")))
+        else:
+            note_label = normalize_string(
+                " ".join(x.xpath(note_literal_xpath, namespaces=NSMAP))
+            )
+        join_uri = URIRef(f"{subj}/event/{i}")
+        join_label = normalize_string(f"{default_prefix} {note_label}")
+        g.add((join_uri, RDFS.label, Literal(join_label, lang=default_lang)))
+        g.add((join_uri, CIDOC["P4_has_time-span"], f"{join_uri}/time-span"))
+        if place_id_xpath == "":
+            place_id = normalize_string(x.xpath(".//tei:event/tei:placeName[@key]/@key")[0])
+        else:
+            place_id = normalize_string(
+                x.xpath(place_id_xpath, namespaces=NSMAP)[0]
+            )
+        g.add((join_uri, CIDOC["P7_took_place_at"], f"{type_domain}/{place_id.split('#')[-1]}"))
+        if event_type_xpath == "":
+            event_type = normalize_string(x.xpath(".//tei:event[@type]/@type")[0])
+        else:
+            event_type = normalize_string(
+                x.xpath(event_type_xpath, namespaces=NSMAP)[0]
+            )
+        g.add((join_uri, CIDOC["P2_has_type"], f"{type_domain}/event/{event_type}"))
+        if date_node_xpath == "":
+            date_node = normalize_string(x.xpath(".//tei:event/tei:desc/tei:date[@when]")[0])
+        else:
+            date_node = normalize_string(
+                x.xpath(date_node_xpath, namespaces=NSMAP)[0]
+            )
+        begin, end = extract_begin_end(date_node)
+        if begin:
+            ts_uri = URIRef(f"{join_uri}/time-span/{begin}")
+            g.add((join_uri, CIDOC["P4_has_time-span"], ts_uri))
+            g += create_e52(ts_uri, begin_of_begin=begin, end_of_end=begin)
+        if end:
+            ts_uri = URIRef(f"{ts_uri}/time-span/{end}")
+            label = date_node.attrib["when"]
+            g.add((ts_uri, RDFS.label, Literal(label, lang=default_lang)))
+            g.add((ts_uri, CIDOC["P4_has_time-span"], ts_uri))
+            g += create_e52(ts_uri, begin_of_begin=end, end_of_end=end)
+    return g
