@@ -325,6 +325,14 @@ def make_e42_identifiers(
     g.add((app_uri, RDFS.label, Literal(label_value, lang=lang)))
     g.add((app_uri, RDF.value, Literal(normalize_string(xml_id))))
     g.add((app_uri, CIDOC["P2_has_type"], type_uri))
+    events_types = {}
+    for i, x in enumerate(node.xpath(".//tei:event[@type]", namespaces=NSMAP)):
+        events_types[x.attrib["type"]] = x.attrib["type"]
+    if events_types:
+        for i, x in enumerate(events_types.keys()):
+            event_type_uri = URIRef(f"{type_domain}event/{x}")
+            g.add((event_type_uri, RDF.type, CIDOC["E55_Type"]))
+            g.add((event_type_uri, RDFS.label, Literal(x, lang=default_lang)))
     for i, x in enumerate(node.xpath(".//tei:idno", namespaces=NSMAP)):
         idno_type_base_uri = f"{type_domain}idno"
         if x.text:
@@ -512,58 +520,58 @@ def make_events(
     subj: URIRef,
     node: Element,
     type_domain: str,
-    event_type_xpath=".//tei:event[@type]/@type",
-    verbose=False,
     default_prefix="Event:",
     default_lang="de",
-    date_node_xpath=".//tei:desc/tei:date[@when]/when",
-    place_id_xpath=".//tei:desc/tei:placeName/@key",
-    note_literal_xpath=".//tei:note",
+    domain = f"https://sk.acdh.oeaw.ac.at/"
 ):
     g = Graph()
-    xml_id = node.attrib["{http://www.w3.org/XML/1998/namespace}id"]
-    item_id = f"{type_domain}/{xml_id}"
-    subj = URIRef(item_id)
+    date_node_xpath="./tei:desc/tei:date[@when]"
+    place_id_xpath="./tei:desc/tei:placeName[@key]/@key"
+    note_literal_xpath="./tei:note/text()"
+    event_type_xpath="@type"
     for i, x in enumerate(node.xpath(".//tei:event", namespaces=NSMAP)):
+        # create event as E5_type
+        event_uri = URIRef(f"{subj}/event/{i}")
+        g.add((event_uri, RDF.type, CIDOC["E5_Event"]))
+        # create note label
         if note_literal_xpath == "":
             note_label = normalize_string(" ".join(x.xpath(".//text()")))
         else:
             note_label = normalize_string(
                 " ".join(x.xpath(note_literal_xpath, namespaces=NSMAP))
             )
-        join_uri = URIRef(f"{subj}/event/{i}")
-        join_label = normalize_string(f"{default_prefix} {note_label}")
-        g.add((join_uri, RDFS.label, Literal(join_label, lang=default_lang)))
-        g.add((join_uri, CIDOC["P4_has_time-span"], f"{join_uri}/time-span"))
+        event_label = normalize_string(f"{default_prefix} {note_label}")
+        g.add((event_uri, RDFS.label, Literal(event_label, lang=default_lang)))
+        # create event time-span
+        g.add((event_uri, CIDOC["P4_has_time-span"], URIRef(f"{event_uri}/time-span")))
+        # create event placeName
         if place_id_xpath == "":
-            place_id = normalize_string(x.xpath(".//tei:event/tei:placeName[@key]/@key")[0])
+            place_id = x.xpath(".//tei:placeName[@key]/@key", namespaces=NSMAP)
         else:
-            place_id = normalize_string(
-                x.xpath(place_id_xpath, namespaces=NSMAP)[0]
-            )
-        g.add((join_uri, CIDOC["P7_took_place_at"], f"{type_domain}/{place_id.split('#')[-1]}"))
+            place_id = x.xpath(place_id_xpath, namespaces=NSMAP)
+        if place_id:
+            print(place_id[0])
+            g.add((event_uri, CIDOC["P7_took_place_at"], URIRef(f"{domain}{place_id[0].split('#')[-1]}")))
+        # create event type
         if event_type_xpath == "":
             event_type = normalize_string(x.xpath(".//tei:event[@type]/@type")[0])
         else:
             event_type = normalize_string(
                 x.xpath(event_type_xpath, namespaces=NSMAP)[0]
             )
-        g.add((join_uri, CIDOC["P2_has_type"], f"{type_domain}/event/{event_type}"))
+        g.add((event_uri, CIDOC["P2_has_type"], URIRef(f"{type_domain}/event/{event_type}")))
         if date_node_xpath == "":
-            date_node = normalize_string(x.xpath(".//tei:event/tei:desc/tei:date[@when]")[0])
+            date_node = x.xpath(".//tei:desc/tei:date[@when]")[0]
         else:
-            date_node = normalize_string(
-                x.xpath(date_node_xpath, namespaces=NSMAP)[0]
-            )
+            date_node = x.xpath(date_node_xpath, namespaces=NSMAP)[0]
         begin, end = extract_begin_end(date_node)
         if begin:
-            ts_uri = URIRef(f"{join_uri}/time-span/{begin}")
-            g.add((join_uri, CIDOC["P4_has_time-span"], ts_uri))
+            ts_uri = URIRef(f"{event_uri}/time-span")
+            g.add((ts_uri, RDF.type, CIDOC["E52_Time-Span"]))
             g += create_e52(ts_uri, begin_of_begin=begin, end_of_end=begin)
         if end:
-            ts_uri = URIRef(f"{ts_uri}/time-span/{end}")
+            ts_uri = URIRef(f"{event_uri}/time-span")
             label = date_node.attrib["when"]
             g.add((ts_uri, RDFS.label, Literal(label, lang=default_lang)))
-            g.add((ts_uri, CIDOC["P4_has_time-span"], ts_uri))
             g += create_e52(ts_uri, begin_of_begin=end, end_of_end=end)
     return g
