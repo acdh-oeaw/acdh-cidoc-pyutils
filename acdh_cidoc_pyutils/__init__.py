@@ -5,7 +5,8 @@ from lxml.etree import Element
 from rdflib import Graph, Literal, URIRef, XSD, RDF, RDFS, OWL
 from slugify import slugify
 from acdh_tei_pyutils.utils import make_entity_label
-from acdh_cidoc_pyutils.namespaces import CIDOC, FRBROO, NSMAP, DATE_ATTRIBUTE_DICT
+from acdh_cidoc_pyutils.namespaces import CIDOC, FRBROO, NSMAP, \
+    DATE_ATTRIBUTE_DICT
 
 
 def normalize_string(string: str) -> str:
@@ -103,7 +104,11 @@ def date_to_literal(
     return return_value
 
 
-def make_uri(domain="https://foo.bar/whatever", version="", prefix="") -> URIRef:
+def make_uri(
+        domain="https://foo.bar/whatever",
+        version="",
+        prefix=""
+        ) -> URIRef:
     if domain.endswith("/"):
         domain = domain[:-1]
     some_id = f"{uuid.uuid1()}"
@@ -142,7 +147,9 @@ def create_e52(
                 uri,
                 CIDOC["P82b_end_of_the_end"],
                 date_to_literal(
-                    end_of_end, not_known_value=not_known_value, default_lang=default_lang
+                    end_of_end,
+                    not_known_value=not_known_value,
+                    default_lang=default_lang
                 ),
             )
         )
@@ -164,7 +171,9 @@ def create_e52(
                 uri,
                 CIDOC["P82a_begin_of_the_begin"],
                 date_to_literal(
-                    end_of_end, not_known_value=not_known_value, default_lang=default_lang
+                    end_of_end,
+                    not_known_value=not_known_value,
+                    default_lang=default_lang
                 ),
             )
         )
@@ -173,8 +182,16 @@ def create_e52(
     if label:
         label_str = " - ".join(
             [
-                f"{date_to_literal(begin_of_begin, not_known_value=not_known_value, default_lang=default_lang)}",
-                f"{date_to_literal(end_of_end, not_known_value=not_known_value, default_lang=default_lang)}",
+                date_to_literal(
+                    begin_of_begin,
+                    not_known_value=not_known_value,
+                    default_lang=default_lang
+                ),
+                date_to_literal(
+                    end_of_end,
+                    not_known_value=not_known_value,
+                    default_lang=default_lang
+                ),
             ]
         ).strip()
         if label_str != "":
@@ -182,9 +199,11 @@ def create_e52(
             if start == end:
                 g.add((uri, RDFS.label, Literal(start, datatype=XSD.string)))
             else:
-                g.add((uri, RDFS.label, Literal(label_str, datatype=XSD.string)))
+                g.add((uri, RDFS.label, Literal(label_str,
+                                                datatype=XSD.string)))
     if time_span_type:
-        g.add((uri, CIDOC["P2_has_type"], URIRef(f"{domain}types/date/{time_span_type}")))
+        g.add((uri, CIDOC["P2_has_type"],
+               URIRef(f"{domain}types/date/{time_span_type}")))
     return g
 
 
@@ -219,14 +238,17 @@ def make_appellations(
             g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
             g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
             g.add(
-                (app_uri, RDFS.label, Literal(normalize_string(y.text), lang=lang_tag))
+                (app_uri, RDFS.label, Literal(normalize_string(y.text),
+                                              lang=lang_tag))
             )
             g.add(
                 (app_uri, RDF.value, Literal(normalize_string(y.text)))
             )
             type_label = y.get(type_attribute)
             if type_label:
-                cur_type_uri = URIRef(f"{type_uri}/{slugify(type_label)}".lower())
+                cur_type_uri = URIRef(
+                    f"{type_uri}/{slugify(type_label)}".lower()
+                    )
             else:
                 cur_type_uri = URIRef(type_uri.lower())
             g.add((cur_type_uri, RDF.type, CIDOC["E55_Type"]))
@@ -241,7 +263,11 @@ def make_appellations(
                 y, default_lang=default_lang
             )
             g.add(
-                (app_uri, RDFS.label, Literal(normalize_string(entity_label_str), lang=cur_lang))
+                (
+                    app_uri,
+                    RDFS.label,
+                    Literal(normalize_string(entity_label_str), lang=cur_lang)
+                )
             )
             cur_type_uri = URIRef(f"{type_uri.lower()}")
             g.add((cur_type_uri, RDF.type, CIDOC["E55_Type"]))
@@ -251,7 +277,8 @@ def make_appellations(
         #     cur_type_uri = f"{type_uri}/{child.tag.split('}')[-1]}".lower()
         #     type_label = child.get(type_attribute)
         #     if type_label:
-        #         cur_type_uri = URIRef(f"{cur_type_uri}/{slugify(type_label)}".lower())
+        #         cur_type_uri = URIRef(
+    #                               f"{cur_type_uri}/{slugify(type_label)}".lower())
         #     else:
         #         cur_type_uri = URIRef(cur_type_uri.lower())
         #     try:
@@ -262,12 +289,15 @@ def make_appellations(
         #         child_lang_tag = lang_tag
         #     app_uri = URIRef(f"{subj}/appellation/{i}/{c}")
         #     g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
-        #     g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
+        #     g.add((app_uri,
+        #           RDF.type,
+        #           CIDOC["E33_E41_Linguistic_Appellation"]))
         #     g.add(
         #         (
         #             app_uri,
         #             RDFS.label,
-        #             Literal(normalize_string(child.text), lang=child_lang_tag),
+        #             Literal(normalize_string(child.text),
+        #                       lang=child_lang_tag),
         #         )
         #     )
         #     g.add(
@@ -317,8 +347,8 @@ def make_e42_identifiers(
     app_uri = URIRef(f"{subj}/identifier/{xml_id}")
     type_uri = URIRef(f"{type_domain}idno/xml-id")
     approx_uri = URIRef(f"{type_domain}date/approx")
-    g.add((approx_uri, RDF.type, CIDOC["E55_Type"])) # time_span approx type
-    g.add((approx_uri, RDFS.label, Literal("approx"))) # time_span approx label
+    g.add((approx_uri, RDF.type, CIDOC["E55_Type"]))
+    g.add((approx_uri, RDFS.label, Literal("approx")))
     g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
     g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
     g.add((app_uri, RDF.type, CIDOC["E42_Identifier"]))
@@ -365,7 +395,12 @@ def make_e42_identifiers(
 
 
 def make_occupations(
-    subj: URIRef, node: Element, prefix="occupation", id_xpath=False, default_lang="de", not_known_value="undefined"
+    subj: URIRef,
+    node: Element,
+    prefix="occupation",
+    id_xpath=False,
+    default_lang="de",
+    not_known_value="undefined"
 ):
     g = Graph()
     occ_uris = []
@@ -395,7 +430,10 @@ def make_occupations(
         if begin or end:
             ts_uri = URIRef(f"{occ_uri}/time-span")
             g.add((occ_uri, CIDOC["P4_has_time-span"], ts_uri))
-            g += create_e52(ts_uri, begin_of_begin=begin, end_of_end=end, not_known_value=not_known_value)
+            g += create_e52(ts_uri,
+                            begin_of_begin=begin,
+                            end_of_end=end,
+                            not_known_value=not_known_value)
     return (g, occ_uris)
 
 
@@ -440,10 +478,13 @@ def make_affiliations(
             g += create_e52(ts_uri, begin_of_begin=begin, end_of_end=begin)
         if end:
             leave_uri = URIRef(f"{subj}/leaving/{affiliation_id}/{i}")
-            leave_label = normalize_string(f"{person_label} leaves {org_label}")
+            leave_label = normalize_string(
+                f"{person_label} leaves {org_label}")
             g.add((leave_uri, RDF.type, CIDOC["E86_Leaving"]))
             g.add((leave_uri, CIDOC["P145_separated"], subj))
-            g.add((leave_uri, CIDOC["P146_separated_from"], org_affiliation_uri))
+            g.add((leave_uri,
+                   CIDOC["P146_separated_from"],
+                   org_affiliation_uri))
             g.add((leave_uri, RDFS.label, Literal(leave_label, lang=lang)))
             ts_uri = URIRef(f"{leave_uri}/time-span/{end}")
             g.add((leave_uri, CIDOC["P4_has_time-span"], ts_uri))
@@ -491,7 +532,9 @@ def make_birth_death_entities(
     g.set((event_uri, cidoc_property, subj))
     g.set((event_uri, RDF.type, cidoc_class))
     g.add(
-        (event_uri, RDFS.label, Literal(f"{default_prefix} {label}", lang=label_lang))
+        (event_uri,
+         RDFS.label,
+         Literal(f"{default_prefix} {label}", lang=label_lang))
     )
     g.set((event_uri, CIDOC["P4_has_time-span"], time_stamp_uri))
     try:
@@ -522,13 +565,13 @@ def make_events(
     type_domain: str,
     default_prefix="Event:",
     default_lang="de",
-    domain = f"https://sk.acdh.oeaw.ac.at/"
+    domain="https://sk.acdh.oeaw.ac.at/"
 ):
     g = Graph()
-    date_node_xpath="./tei:desc/tei:date[@when]"
-    place_id_xpath="./tei:desc/tei:placeName[@key]/@key"
-    note_literal_xpath="./tei:note/text()"
-    event_type_xpath="@type"
+    date_node_xpath = "./tei:desc/tei:date[@when]"
+    place_id_xpath = "./tei:desc/tei:placeName[@key]/@key"
+    note_literal_xpath = "./tei:note/text()"
+    event_type_xpath = "@type"
     for i, x in enumerate(node.xpath(".//tei:event", namespaces=NSMAP)):
         # create event as E5_type
         event_uri = URIRef(f"{subj}/event/{i}")
@@ -543,23 +586,29 @@ def make_events(
         event_label = normalize_string(f"{default_prefix} {note_label}")
         g.add((event_uri, RDFS.label, Literal(event_label, lang=default_lang)))
         # create event time-span
-        g.add((event_uri, CIDOC["P4_has_time-span"], URIRef(f"{event_uri}/time-span")))
+        g.add((event_uri,
+               CIDOC["P4_has_time-span"],
+               URIRef(f"{event_uri}/time-span")))
         # create event placeName
         if place_id_xpath == "":
             place_id = x.xpath(".//tei:placeName[@key]/@key", namespaces=NSMAP)
         else:
             place_id = x.xpath(place_id_xpath, namespaces=NSMAP)
         if place_id:
-            print(place_id[0])
-            g.add((event_uri, CIDOC["P7_took_place_at"], URIRef(f"{domain}{place_id[0].split('#')[-1]}")))
+            g.add((event_uri,
+                   CIDOC["P7_took_place_at"],
+                   URIRef(f"{domain}{place_id[0].split('#')[-1]}")))
         # create event type
         if event_type_xpath == "":
-            event_type = normalize_string(x.xpath(".//tei:event[@type]/@type")[0])
+            event_type = normalize_string(
+                x.xpath(".//tei:event[@type]/@type")[0])
         else:
             event_type = normalize_string(
                 x.xpath(event_type_xpath, namespaces=NSMAP)[0]
             )
-        g.add((event_uri, CIDOC["P2_has_type"], URIRef(f"{type_domain}/event/{event_type}")))
+        g.add((event_uri,
+               CIDOC["P2_has_type"],
+               URIRef(f"{type_domain}/event/{event_type}")))
         if date_node_xpath == "":
             date_node = x.xpath(".//tei:desc/tei:date[@when]")[0]
         else:
