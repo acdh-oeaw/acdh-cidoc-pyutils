@@ -488,7 +488,8 @@ mein schatz ich liebe    dich
             <forename>Hieronymus</forename>
             <surname>Bosch</surname>
         </persName>
-        <birth when="1450" type="approx">ca. 1450<placeName key="#DWplace00214">’s-Hertogenbosch</placeName></birth>
+        <birth when="1450" type="approx">
+            ca. 1450<placeName key="#DWplace00214">’s-Hertogenbosch</placeName></birth>
         <event type="burial">
             <desc>
                 <date when="1516-08-08">8. 8. 1516</date>
@@ -499,7 +500,7 @@ mein schatz ich liebe    dich
         <persName type="sk" subtype="pref">Bosch, Hieronymus</persName>
         <occupation type="prim" n="01">Maler</occupation>
         <idno type="GND">11851380X</idno>
-        <note type="source" subtype="publ">RKD – Nederlands Instituut voor Kunstgeschiedenis: Explore. URL: https://rkd.nl/nl/explore (22. 3. 2021).</note>
+        <note type="source" subtype="publ">RKD – Nederlands Instituut voor Kunstgeschiedenis</note>
         <note type="status" subtype="final"/>
     </person>
 </TEI>"""
