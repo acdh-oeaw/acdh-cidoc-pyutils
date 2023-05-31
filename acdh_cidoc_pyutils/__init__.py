@@ -104,11 +104,9 @@ def date_to_literal(
     return return_value
 
 
-def make_uri(
-        domain="https://foo.bar/whatever",
-        version="",
-        prefix=""
-        ) -> URIRef:
+def make_uri(domain="https://foo.bar/whatever",
+             version="",
+             prefix="") -> URIRef:
     if domain.endswith("/"):
         domain = domain[:-1]
     some_id = f"{uuid.uuid1()}"
@@ -246,9 +244,7 @@ def make_appellations(
             )
             type_label = y.get(type_attribute)
             if type_label:
-                cur_type_uri = URIRef(
-                    f"{type_uri}/{slugify(type_label)}".lower()
-                    )
+                cur_type_uri = URIRef(f"{type_uri}/{slugify(type_label)}".lower())
             else:
                 cur_type_uri = URIRef(type_uri.lower())
             g.add((cur_type_uri, RDF.type, CIDOC["E55_Type"]))
@@ -259,16 +255,10 @@ def make_appellations(
             app_uri = URIRef(f"{subj}/appellation/{i}")
             g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
             g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
-            entity_label_str, cur_lang = make_entity_label(
-                y, default_lang=default_lang
-            )
-            g.add(
-                (
-                    app_uri,
-                    RDFS.label,
-                    Literal(normalize_string(entity_label_str), lang=cur_lang)
-                )
-            )
+            entity_label_str, cur_lang = make_entity_label(y, default_lang=default_lang)
+            g.add((app_uri,
+                   RDFS.label,
+                   Literal(normalize_string(entity_label_str), lang=cur_lang)))
             cur_type_uri = URIRef(f"{type_uri.lower()}")
             g.add((cur_type_uri, RDF.type, CIDOC["E55_Type"]))
             g.add((app_uri, CIDOC["P2_has_type"], cur_type_uri))
@@ -277,8 +267,7 @@ def make_appellations(
         #     cur_type_uri = f"{type_uri}/{child.tag.split('}')[-1]}".lower()
         #     type_label = child.get(type_attribute)
         #     if type_label:
-        #         cur_type_uri = URIRef(
-    #                               f"{cur_type_uri}/{slugify(type_label)}".lower())
+        #         cur_type_uri = URIRef(f"{cur_type_uri}/{slugify(type_label)}".lower())
         #     else:
         #         cur_type_uri = URIRef(cur_type_uri.lower())
         #     try:
@@ -315,9 +304,7 @@ def make_appellations(
         first_name_el = node.xpath(xpath_expression, namespaces=NSMAP)[0]
     except IndexError:
         return g
-    entity_label_str, cur_lang = make_entity_label(
-        first_name_el, default_lang=default_lang
-    )
+    entity_label_str, cur_lang = make_entity_label(first_name_el, default_lang=default_lang)
     g.add((subj, RDFS.label, Literal(entity_label_str, lang=cur_lang)))
     return g
 
@@ -382,15 +369,9 @@ def make_e42_identifiers(
             g.add((idno_uri, RDF.value, Literal(normalize_string(x.text))))
             if same_as:
                 if x.text.startswith("http"):
-                    g.add(
-                        (
-                            subj,
-                            OWL.sameAs,
-                            URIRef(
-                                x.text,
-                            ),
-                        )
-                    )
+                    g.add((subj,
+                           OWL.sameAs,
+                           URIRef(x.text,)))
     return g
 
 
@@ -580,9 +561,7 @@ def make_events(
         if note_literal_xpath == "":
             note_label = normalize_string(" ".join(x.xpath(".//text()")))
         else:
-            note_label = normalize_string(
-                " ".join(x.xpath(note_literal_xpath, namespaces=NSMAP))
-            )
+            note_label = normalize_string(" ".join(x.xpath(note_literal_xpath, namespaces=NSMAP)))
         event_label = normalize_string(f"{default_prefix} {note_label}")
         g.add((event_uri, RDFS.label, Literal(event_label, lang=default_lang)))
         # create event time-span
@@ -603,9 +582,7 @@ def make_events(
             event_type = normalize_string(
                 x.xpath(".//tei:event[@type]/@type")[0])
         else:
-            event_type = normalize_string(
-                x.xpath(event_type_xpath, namespaces=NSMAP)[0]
-            )
+            event_type = normalize_string(x.xpath(event_type_xpath, namespaces=NSMAP)[0])
         g.add((event_uri,
                CIDOC["P2_has_type"],
                URIRef(f"{type_domain}/event/{event_type}")))
