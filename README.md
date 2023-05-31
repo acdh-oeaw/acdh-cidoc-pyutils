@@ -468,19 +468,19 @@ g.serialize(format="ttl")
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-<https://foo/bar/dwpers0023/burial> a ns1:E55_Type .
-
-<https://foo/bar/dwpers0023/burial/event/0> a ns1:E5_Event ;
+<https://foo/bar/dwpers0023/event/0> a ns1:E5_Event ;
     rdfs:label "Event: Burial"@en ;
     ns1:P2_has_type <https://foo/bar/types/event/burial> ;
-    ns1:P4_has_time-span <https://foo/bar/dwpers0023/burial/event/0/time-span> ;
+    ns1:P4_has_time-span <https://foo/bar/dwpers0023/event/0/time-span> ;
     ns1:P7_took_place_at <https://foo/bar/DWplace00162> .
 
-<https://foo/bar/dwpers0023/burial/event/0/time-span> a ns1:E52_Time-Span ;
+<https://foo/bar/dwpers0023/event/0/time-span> a ns1:E52_Time-Span ;
     rdfs:label "1516-08-08"^^xsd:string,
         "1516-08-08"@en ;
     ns1:P82a_begin_of_the_begin "1516-08-08"^^xsd:date ;
     ns1:P82b_end_of_the_end "1516-08-08"^^xsd:date .
+
+<https://foo/bar/types/event/burial> a ns1:E55_Type .
 ```
 
 
