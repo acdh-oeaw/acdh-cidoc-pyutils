@@ -5,8 +5,10 @@ from lxml.etree import Element
 from rdflib import Graph, Literal, URIRef, XSD, RDF, RDFS, OWL
 from slugify import slugify
 from acdh_tei_pyutils.utils import make_entity_label
-from acdh_cidoc_pyutils.namespaces import CIDOC, FRBROO, NSMAP, \
-    DATE_ATTRIBUTE_DICT
+from acdh_cidoc_pyutils.namespaces import (CIDOC,
+                                           FRBROO,
+                                           NSMAP,
+                                           DATE_ATTRIBUTE_DICT)
 
 
 def normalize_string(string: str) -> str:
@@ -117,13 +119,12 @@ def make_uri(domain="https://foo.bar/whatever",
 
 def create_e52(
     uri: URIRef,
+    type_uri: URIRef = None,
     begin_of_begin="",
     end_of_end="",
     label=True,
     not_known_value="undefined",
     default_lang="en",
-    time_span_type=None,
-    domain=None,
 ) -> Graph:
     g = Graph()
     g.add((uri, RDF.type, CIDOC["E52_Time-Span"]))
@@ -199,9 +200,8 @@ def create_e52(
             else:
                 g.add((uri, RDFS.label, Literal(label_str,
                                                 datatype=XSD.string)))
-    if time_span_type:
-        g.add((uri, CIDOC["P2_has_type"],
-               URIRef(f"{domain}types/date/{time_span_type}")))
+    if type_uri:
+        g.add((uri, CIDOC["P2_has_type"], type_uri))
     return g
 
 
@@ -211,20 +211,23 @@ def make_appellations(
     type_domain="https://foo-bar/",
     type_attribute="type",
     default_lang="de",
+    special_regex=None,
 ) -> Graph:
     if not type_domain.endswith("/"):
         type_domain = f"{type_domain}/"
     g = Graph()
     tag_name = node.tag.split("}")[-1]
-    base_type_uri = f"{type_domain}{tag_name}"
+    base_type_uri = f"{type_domain}{tag_name}"        
     if tag_name.endswith("place"):
         xpath_expression = ".//tei:placeName"
     elif tag_name.endswith("person"):
-        xpath_expression = ".//tei:persName[@type='sk']"
+        xpath_expression = ".//tei:persName"
     elif tag_name.endswith("org"):
         xpath_expression = ".//tei:orgName"
     else:
         return g
+    if special_regex:
+        xpath_expression = f"{xpath_expression}{special_regex}"
     for i, y in enumerate(node.xpath(xpath_expression, namespaces=NSMAP)):
         try:
             lang_tag = y.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
@@ -477,13 +480,13 @@ def make_birth_death_entities(
     subj: URIRef,
     node: Element,
     domain: str,
+    type_uri: URIRef = None,
     event_type="birth",
     verbose=False,
     default_prefix="Geburt von",
     default_lang="de",
     date_node_xpath="",
-    place_id_xpath="//tei:placeName/@key",
-    time_span_type=None,
+    place_id_xpath="//tei:placeName/@key"
 ):
     g = Graph()
     name_node = node.xpath(".//tei:persName[1]", namespaces=NSMAP)[0]
@@ -525,8 +528,10 @@ def make_birth_death_entities(
         process_date = False
     if process_date:
         start, end = extract_begin_end(date_node)
-        g += create_e52(time_stamp_uri, begin_of_begin=start, end_of_end=end,
-                        time_span_type=time_span_type, domain=domain)
+        g += create_e52(time_stamp_uri,
+                        type_uri,
+                        begin_of_begin=start,
+                        end_of_end=end)
     try:
         place_node = node.xpath(place_xpath, namespaces=NSMAP)[0]
         process_place = True
