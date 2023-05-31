@@ -511,7 +511,7 @@ mein schatz ich liebe    dich
             xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
             item_id = f"https://foo/bar/{xml_id}"
             subj = URIRef(item_id)
-            g.add((subj, RDF.type, CIDOC["hansi"]))
+            g.add((URIRef("https://foo/bar/types/event/burial"), RDF.type, CIDOC["E55_Type"]))
             g += make_events(
                 subj, x, type_domain="https://foo/bar/types", default_lang="en", domain="https://foo/bar/"
             )
