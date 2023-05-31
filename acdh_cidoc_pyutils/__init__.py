@@ -114,7 +114,7 @@ def make_uri(domain="https://foo.bar/whatever", version="", prefix="") -> URIRef
 
 def create_e52(
     uri: URIRef,
-    type_uri: URIRef = None,
+    type_uri: Union[URIRef, None] = None,
     begin_of_begin="",
     end_of_end="",
     label=True,
