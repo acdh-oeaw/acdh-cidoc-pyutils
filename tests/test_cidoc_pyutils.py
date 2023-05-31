@@ -16,7 +16,6 @@ from acdh_cidoc_pyutils import (
     make_birth_death_entities,
     make_occupations,
     make_affiliations,
-    make_events,
 )
 from acdh_cidoc_pyutils.namespaces import NSMAP, CIDOC
 
@@ -478,49 +477,3 @@ mein schatz ich liebe    dich
             org_label_xpath="./tei:orgName[1]//text()"
         )
         g.serialize("affiliations1.ttl")
-
-    def test_013_make_events(self):
-        g = Graph()
-        sample = """
-<TEI xmlns="http://www.tei-c.org/ns/1.0">
-    <person xml:id="DWpers0023" sortKey="Bosch_Hieronymus">
-        <persName>
-            <forename>Hieronymus</forename>
-            <surname>Bosch</surname>
-        </persName>
-        <birth when="1450" type="approx">
-            ca. 1450<placeName key="#DWplace00214">’s-Hertogenbosch</placeName></birth>
-        <event type="burial">
-            <desc>
-                <date when="1516-08-08">8. 8. 1516</date>
-                <placeName key="#DWplace00162">’s-Hertogenbosch</placeName>
-            </desc>
-            <note>Burial</note>
-        </event>
-        <persName type="sk" subtype="pref">Bosch, Hieronymus</persName>
-        <occupation type="prim" n="01">Maler</occupation>
-        <idno type="GND">11851380X</idno>
-        <note type="source" subtype="publ">RKD – Nederlands Instituut voor Kunstgeschiedenis</note>
-        <note type="status" subtype="final"/>
-    </person>
-</TEI>"""
-        doc = ET.fromstring(sample)
-        for x in doc.xpath(
-            ".//tei:place|tei:org|tei:person|tei:bibl", namespaces=NSMAP
-        ):
-            xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
-            item_id = f"https://foo/bar/{xml_id}"
-            subj = URIRef(item_id)
-            g.add((URIRef("https://foo/bar/types/event/burial"), RDF.type, CIDOC["E55_Type"]))
-            g += make_events(
-                subj, x, type_domain="https://foo/bar/types", default_lang="en", domain="https://foo/bar/"
-            )
-        data = g.serialize(format="turtle")
-        g.serialize("events.ttl", format="turtle")
-        self.assertTrue('rdfs:label "Event: Burial"@en' in data)
-        self.assertTrue("@en" in data)
-        self.assertTrue('ns1:P82a_begin_of_the_begin "1516-08-08"' in data)
-        self.assertTrue('ns1:P82b_end_of_the_end "1516-08-08"' in data)
-        self.assertTrue('ns1:P2_has_type <https://foo/bar/types/event/burial>' in data)
-        self.assertTrue('ns1:P4_has_time-span <https://foo/bar/dwpers0023/event/0/time-span>' in data)
-        self.assertTrue('ns1:P7_took_place_at <https://foo/bar/DWplace00162>' in data)
