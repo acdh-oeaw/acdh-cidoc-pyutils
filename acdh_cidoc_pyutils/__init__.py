@@ -217,7 +217,7 @@ def make_appellations(
         type_domain = f"{type_domain}/"
     g = Graph()
     tag_name = node.tag.split("}")[-1]
-    base_type_uri = f"{type_domain}{tag_name}"        
+    base_type_uri = f"{type_domain}{tag_name}"
     if tag_name.endswith("place"):
         xpath_expression = ".//tei:placeName"
     elif tag_name.endswith("person"):
