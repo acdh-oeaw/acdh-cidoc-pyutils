@@ -388,6 +388,7 @@ def make_occupations(
     id_xpath=False,
     default_lang="de",
     not_known_value="undefined",
+    special_label=None
 ):
     g = Graph()
     occ_uris = []
@@ -411,7 +412,10 @@ def make_occupations(
         occ_uri = URIRef(f"{base_uri}/{occ_id}")
         occ_uris.append(occ_uri)
         g.add((occ_uri, RDF.type, FRBROO["F51_Pursuit"]))
-        g.add((occ_uri, RDFS.label, Literal(occ_text, lang=lang)))
+        if special_label:
+            g.add((occ_uri, RDFS.label, Literal(f"{special_label}{occ_text}", lang=lang)))
+        else:
+            g.add((occ_uri, RDFS.label, Literal(occ_text, lang=lang)))
         g.add((subj, CIDOC["P14i_performed"], occ_uri))
         begin, end = extract_begin_end(x, fill_missing=False)
         if begin or end:
