@@ -204,6 +204,7 @@ def make_appellations(
     node: Element,
     type_domain="https://foo-bar/",
     type_attribute="type",
+    woke_type=False,
     default_lang="de",
     special_xpath=None,
 ) -> Graph:
@@ -239,6 +240,8 @@ def make_appellations(
             type_label = y.get(type_attribute)
             if type_label:
                 cur_type_uri = URIRef(f"{type_uri}/{slugify(type_label)}".lower())
+            elif woke_type:
+                cur_type_uri = URIRef(f"{type_uri.lower()}/{woke_type}")
             else:
                 cur_type_uri = URIRef(type_uri.lower())
             g.add((cur_type_uri, RDF.type, CIDOC["E55_Type"]))
@@ -257,7 +260,10 @@ def make_appellations(
                     Literal(normalize_string(entity_label_str), lang=cur_lang),
                 )
             )
-            cur_type_uri = URIRef(f"{type_uri.lower()}")
+            if woke_type:
+                cur_type_uri = URIRef(f"{type_uri.lower()}/{woke_type}")
+            else:
+                cur_type_uri = URIRef(f"{type_uri.lower()}")
             g.add((cur_type_uri, RDF.type, CIDOC["E55_Type"]))
             g.add((app_uri, CIDOC["P2_has_type"], cur_type_uri))
         # see https://github.com/acdh-oeaw/acdh-cidoc-pyutils/issues/36
