@@ -524,21 +524,23 @@ def make_birth_death_entities(
             print(subj, e)
             return (g, None, None)
     event_uri = URIRef(f"{subj}/{event_type}")
-    time_stamp_uri = URIRef(f"{event_uri}/time-span")
     g.set((event_uri, cidoc_property, subj))
     g.set((event_uri, RDF.type, cidoc_class))
     g.add(
         (event_uri, RDFS.label, Literal(f"{default_prefix} {label}", lang=label_lang))
     )
-    g.set((event_uri, CIDOC["P4_has_time-span"], time_stamp_uri))
     try:
         date_node = node.xpath(date_xpath, namespaces=NSMAP)[0]
         process_date = True
     except IndexError:
         process_date = False
     if process_date:
+        time_stamp_uri = URIRef(f"{event_uri}/time-span")
+        g.set((event_uri, CIDOC["P4_has_time-span"], time_stamp_uri))
         start, end = extract_begin_end(date_node)
         g += create_e52(time_stamp_uri, type_uri, begin_of_begin=start, end_of_end=end)
+    else:
+        time_stamp_uri = None
     try:
         place_node = node.xpath(place_xpath, namespaces=NSMAP)[0]
         process_place = True
