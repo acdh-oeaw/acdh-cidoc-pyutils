@@ -70,6 +70,8 @@ def extract_begin_end(
                 final_start, final_end = end, end
             elif when and not start and not end:
                 final_start, final_end = when, when
+            elif when and end and not start:
+                final_start, final_end = when, end
     else:
         if start and end:
             final_start, final_end = start, end
@@ -79,6 +81,8 @@ def extract_begin_end(
             final_start, final_end = None, end
         elif when and not start and not end:
             final_start, final_end = when, when
+        elif when and end and not start:
+            final_start, final_end = when, end
     return final_start, final_end
 
 
