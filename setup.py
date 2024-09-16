@@ -9,7 +9,7 @@ with open("README.md") as readme_file:
 
 
 requirements = [
-    "rdflib>=6,<7",
+    "rdflib>=6,<8",
     "acdh-tei-pyutils>=0.30,<2",
     "python-slugify>=5,<8",
 ]
