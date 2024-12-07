@@ -9,8 +9,8 @@ with open("README.md") as readme_file:
 
 
 requirements = [
-    "rdflib>=6,<8",
-    "acdh-tei-pyutils>=0.30,<2",
+    "rdflib>=6,<9",
+    "acdh-tei-pyutils>=1.6,<2",
     "python-slugify>=5,<8",
 ]
 
