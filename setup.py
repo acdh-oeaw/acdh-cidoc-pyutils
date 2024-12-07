@@ -9,9 +9,9 @@ with open("README.md") as readme_file:
 
 
 requirements = [
-    "rdflib>=6,<9",
-    "acdh-tei-pyutils>=1.6,<2",
-    "python-slugify>=5,<8",
+    "rdflib",
+    "acdh-tei-pyutils",
+    "python-slugify",
 ]
 
 
@@ -36,6 +36,6 @@ setup(
     test_suite="tests",
     tests_require=[],
     url="https://github.com/acdh-oeaw/acdh-cidoc-pyutils",
-    version="v0.19",
+    version="v0.27",
     zip_safe=False,
 )
