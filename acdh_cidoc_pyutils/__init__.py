@@ -343,24 +343,13 @@ def make_e42_identifiers(
         type_domain = f"{type_domain}/"
     app_uri = URIRef(f"{subj}/identifier/{xml_id}")
     type_uri = URIRef(f"{type_domain}idno/xml-id")
-    approx_uri = URIRef(f"{type_domain}date/approx")
-    g.add((approx_uri, RDF.type, CIDOC["E55_Type"]))
-    g.add((approx_uri, RDFS.label, Literal("approx")))
     g.add((type_uri, RDF.type, CIDOC["E55_Type"]))
     g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
     g.add((app_uri, RDF.type, CIDOC["E42_Identifier"]))
     g.add((app_uri, RDFS.label, Literal(label_value, lang=lang)))
     g.add((app_uri, RDF.value, Literal(normalize_string(xml_id))))
     g.add((app_uri, CIDOC["P2_has_type"], type_uri))
-    events_types = {}
-    for i, x in enumerate(node.xpath(".//tei:event[@type]", namespaces=NSMAP)):
-        events_types[x.attrib["type"]] = x.attrib["type"]
-    if events_types:
-        for i, x in enumerate(events_types.keys()):
-            event_type_uri = URIRef(f"{type_domain}event/{x}")
-            g.add((event_type_uri, RDF.type, CIDOC["E55_Type"]))
-            g.add((event_type_uri, RDFS.label, Literal(x, lang=default_lang)))
-    for i, x in enumerate(node.xpath(".//tei:idno", namespaces=NSMAP)):
+    for i, x in enumerate(node.xpath("./tei:idno", namespaces=NSMAP)):
         idno_type_base_uri = f"{type_domain}idno"
         if x.text:
             idno_uri = URIRef(f"{subj}/identifier/idno/{i}")
@@ -398,7 +387,7 @@ def make_occupations(
     id_xpath=False,
     default_lang="de",
     not_known_value="undefined",
-    special_label=None
+    special_label=None,
 ):
     g = Graph()
     occ_uris = []
@@ -423,7 +412,9 @@ def make_occupations(
         occ_uris.append(occ_uri)
         g.add((occ_uri, RDF.type, FRBROO["F51_Pursuit"]))
         if special_label:
-            g.add((occ_uri, RDFS.label, Literal(f"{special_label}{occ_text}", lang=lang)))
+            g.add(
+                (occ_uri, RDFS.label, Literal(f"{special_label}{occ_text}", lang=lang))
+            )
         else:
             g.add((occ_uri, RDFS.label, Literal(occ_text, lang=lang)))
         g.add((subj, CIDOC["P14i_performed"], occ_uri))
@@ -450,9 +441,6 @@ def make_affiliations(
     lang="en",
 ):
     g = Graph()
-    xml_id = node.attrib["{http://www.w3.org/XML/1998/namespace}id"]
-    item_id = f"{domain}{xml_id}"
-    subj = URIRef(item_id)
     for i, x in enumerate(node.xpath(".//tei:affiliation", namespaces=NSMAP)):
         try:
             affiliation_id = x.xpath(org_id_xpath, namespaces=NSMAP)[0]
@@ -556,3 +544,31 @@ def make_birth_death_entities(
         place_uri = URIRef(f"{domain}{place_node}")
         g.add((event_uri, CIDOC["P7_took_place_at"], place_uri))
     return (g, event_uri, time_stamp_uri)
+
+
+def p89_falls_within(
+    subj: URIRef,
+    node: Element,
+    domain: URIRef,
+    location_id_xpath="./tei:location[@type='located_in_place']/tei:placeName/@key",
+) -> Graph:
+    """connects to places (E53_Place) with P89_falls_within
+
+    Args:
+        subj (URIRef): The Uri of the Place
+        node (Element): The tei:place Element
+        domain (URIRef): An URI used to create the ID of the domain object: {domain}{ID of target object}
+        location_id_xpath (str, optional): An XPath expression pointing to the parent's place ID.
+        Defaults to "./tei:location[@type='located_in_place']/tei:placeName/@key".
+
+    Returns:
+        Graph: A Graph object linking two places via P89_falls_within
+    """
+    g = Graph()
+    try:
+        range_id = node.xpath(location_id_xpath, namespaces=NSMAP)[0]
+    except IndexError:
+        return g
+    range_uri = URIRef(f"{domain}{range_id}")
+    g.add((subj, CIDOC["P89_falls_within"], range_uri))
+    return g
