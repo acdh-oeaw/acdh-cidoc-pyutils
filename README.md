@@ -369,6 +369,41 @@ g.serialize(format="ttl")
     rdfs:label "Tallinn"@und ;
     ns1:P2_has_type <http://hansi/4/ever/alt-label> .
 ```
+
+### connects to places (E53_Place) with P89_falls_within
+
+```python
+domain = "https://foo/bar/"
+subj = URIRef(f"{domain}place__237979")
+sample = """
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <place xml:id="place__237979">
+        <placeName>Lerchenfelder G&#252;rtel 48</placeName>
+        <desc type="entity_type">Wohngeb&#228;ude (K.WHS)</desc>
+        <desc type="entity_type_id">36</desc>
+        <location type="coords">
+            <geo>48,209035 16,339257</geo>
+        </location>
+        <location>
+            <placeName ref="place__50">Wien</placeName>
+            <geo>48,208333 16,373056</geo>
+        </location>
+    </place>
+</TEI>"""
+doc = ET.fromstring(sample)
+node = doc.xpath(".//tei:place[1]", namespaces=NSMAP)[0]
+g = p89_falls_within(
+    subj, node, domain, location_id_xpath="./tei:location/tei:placeName/@ref"
+)
+result = g.serialize(format="ttl")
+```
+returns
+```ttl
+@prefix ns1: <http://www.cidoc-crm.org/cidoc-crm/> .
+
+<https://foo/bar/place__237979> ns1:P89_falls_within <https://foo/bar/place__50> .
+```
+
 ### normalize_string
 
 ```python

@@ -16,6 +16,7 @@ from acdh_cidoc_pyutils import (
     make_birth_death_entities,
     make_occupations,
     make_affiliations,
+    p89_falls_within,
 )
 from acdh_cidoc_pyutils.namespaces import NSMAP, CIDOC
 
@@ -141,12 +142,12 @@ class TestTestTest(unittest.TestCase):
         e52 = create_e52(uri, end_of_end=begin_of_begin)
         self.assertTrue(begin_of_begin in graph_string)
         e52 = create_e52(uri, begin_of_begin=begin_of_begin, end_of_end=begin_of_begin)
-        e52.serialize('e52.ttl')
+        e52.serialize("e52.ttl")
         self.assertTrue('rdfs:label "1234-05-06"^^xsd:string' in f"{e52.serialize()}")
         e52 = create_e52(uri, begin_of_begin="1222", end_of_end=begin_of_begin)
-        e52.serialize('e52.ttl')
+        e52.serialize("e52.ttl")
         self.assertFalse('rdfs:label "1234-05-06"^^xsd:string' in f"{e52.serialize()}")
-        e52.serialize('e521.ttl')
+        e52.serialize("e521.ttl")
 
     def test_005_normalize_string(self):
         string = """\n\nhallo
@@ -228,7 +229,10 @@ mein schatz ich liebe    dich
             subj = URIRef(item_id)
             g.add((subj, RDF.type, CIDOC["hansi"]))
             g += make_appellations(
-                subj, x, type_domain="https://sk.acdh.oeaw.ac.at/types", default_lang="it"
+                subj,
+                x,
+                type_domain="https://sk.acdh.oeaw.ac.at/types",
+                default_lang="it",
             )
         data = g.serialize(format="turtle")
         g.serialize("appellation.ttl", format="turtle")
@@ -247,7 +251,10 @@ mein schatz ich liebe    dich
             subj = URIRef(item_id)
             g.add((subj, RDF.type, CIDOC["hansi"]))
             g += make_e42_identifiers(
-                subj, x, type_domain="https://sk.acdh.oeaw.ac.at/types", default_lang="it"
+                subj,
+                x,
+                type_domain="https://sk.acdh.oeaw.ac.at/types",
+                default_lang="it",
             )
             data = g.serialize(format="turtle")
         g = Graph()
@@ -283,7 +290,7 @@ mein schatz ich liebe    dich
                 default_lang="it",
                 set_lang=True,
                 same_as=False,
-                default_prefix=default_prefix
+                default_prefix=default_prefix,
             )
             data = g.serialize(format="turtle")
             self.assertTrue("@it" in data)
@@ -413,7 +420,9 @@ mein schatz ich liebe    dich
         g, uris = make_occupations(subj, x)
         self.assertFalse("occupation/hansi" in g.serialize(format="turtle"))
         g.serialize("occupations.ttl")
-        g1, uris = make_occupations(subj, x, id_xpath="@key", not_known_value="ronjaundhanna")
+        g1, uris = make_occupations(
+            subj, x, id_xpath="@key", not_known_value="ronjaundhanna"
+        )
         g1.serialize("occupations1.ttl")
         self.assertTrue("occupation/hansi" in g1.serialize(format="turtle"))
         self.assertTrue("ronjaundhanna" in g1.serialize(format="turtle"))
@@ -474,6 +483,39 @@ mein schatz ich liebe    dich
             domain,
             person_label=person_label,
             org_id_xpath="./tei:orgName[1]/@key",
-            org_label_xpath="./tei:orgName[1]//text()"
+            org_label_xpath="./tei:orgName[1]//text()",
         )
         g.serialize("affiliations1.ttl")
+
+    def test_013_p89_falls_within(self):
+        domain = "https://foo/bar/"
+        subj = URIRef(f"{domain}place__237979")
+        sample = """
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <place xml:id="place__237979">
+        <placeName>Lerchenfelder G&#252;rtel 48</placeName>
+        <desc type="entity_type">Wohngeb&#228;ude (K.WHS)</desc>
+        <desc type="entity_type_id">36</desc>
+        <location type="coords">
+            <geo>48,209035 16,339257</geo>
+        </location>
+        <location>
+            <placeName ref="place__50">Wien</placeName>
+            <geo>48,208333 16,373056</geo>
+        </location>
+    </place>
+</TEI>"""
+        doc = ET.fromstring(sample)
+        node = doc.xpath(".//tei:place[1]", namespaces=NSMAP)[0]
+        g = p89_falls_within(
+            subj, node, domain, location_id_xpath="./tei:location/tei:placeName/@ref"
+        )
+        result = g.serialize(format="ttl")
+        self.assertTrue("https://foo/bar/place__50" in result)
+        g.serialize("p89.ttl")
+
+        g = p89_falls_within(
+            subj, node, domain, location_id_xpath="./tei:location/tei:placeName/@key"
+        )
+        result = g.serialize(format="ttl")
+        self.assertFalse("https://foo/bar/place__50" in result)
