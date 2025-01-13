@@ -454,4 +454,4 @@ print(extract_begin_end(date_object))
 
 * `pip install -r requirements_dev.txt`
 * `flake8` -> linting
-* `coveage run -m pytest` -> runs tests and creates coverage stats
+* `coverage run -m pytest` -> runs tests and creates coverage stats

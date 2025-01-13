@@ -22,6 +22,7 @@ def tei_relation_to_SRPC3_in_social_relation(
     default_rel_type="In-relation-to",
     lang="de",
     verbose=False,
+    entity_prefix=""
 ) -> Graph:
     """converts a specific TEI relation to SRPC3_in_social_relation
 
@@ -32,14 +33,15 @@ def tei_relation_to_SRPC3_in_social_relation(
         default_type_domain (str, optional): The type-domain. Defaults to "http://pfp-schema.acdh.oeaw.ac.at/types/person-person/#".
         default_rel_type (str, optional): A default type which is used if no lookup dict is provided a KeyError is raised. Defaults to "In-relation-to".
         lang (str, optional): The value of the label's lang tag. Defaults to "de".
+        entity_prefix (str, optional): Some prefix to add before the IDs of the entities. Defaults to "".
         verbose (bool, optional): Prints if no match in the lookup dict is found. Defaults to False.
 
     Returns:
         Graph: A Graph object containing the SRPC3_in_social_relation
     """  # noqa: E501
     g = Graph()
-    source = check_for_hash(node.attrib["active"])
-    target = check_for_hash(node.attrib["passive"])
+    source = f'{entity_prefix}{check_for_hash(node.attrib["active"])}'
+    target = f'{entity_prefix}{check_for_hash(node.attrib["passive"])}'
     label = node.attrib["n"]
     rel_type = default_rel_type
     orig_rel_type = node.attrib["name"]
