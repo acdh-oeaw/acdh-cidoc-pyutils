@@ -4,8 +4,66 @@ from typing import Union
 from lxml.etree import Element
 from rdflib import Graph, Literal, URIRef, XSD, RDF, RDFS, OWL
 from slugify import slugify
-from acdh_tei_pyutils.utils import make_entity_label
-from acdh_cidoc_pyutils.namespaces import CIDOC, FRBROO, NSMAP, DATE_ATTRIBUTE_DICT
+from acdh_tei_pyutils.utils import make_entity_label, check_for_hash
+from acdh_cidoc_pyutils.namespaces import (
+    CIDOC,
+    FRBROO,
+    NSMAP,
+    DATE_ATTRIBUTE_DICT,
+    SARI,
+)
+
+
+def tei_relation_to_SRPC3_in_social_relation(
+    node: Element,
+    domain="https://foo-bar/",
+    lookup_dict={},
+    default_type_domain="http://pfp-schema.acdh.oeaw.ac.at/types/person-person/#",
+    default_rel_type="In-relation-to",
+    lang="de",
+    verbose=False,
+    entity_prefix=""
+) -> Graph:
+    """converts a specific TEI relation to SRPC3_in_social_relation
+
+    Args:
+        node (Element): A tei:relation element
+        domain (str, optional): The domain to build URIs for the related entities. Defaults to "https://foo-bar/".
+        lookup_dict (dict, optional): A dict providing mappings from project specific relation types to pfp-types. Defaults to {}.
+        default_type_domain (str, optional): The type-domain. Defaults to "http://pfp-schema.acdh.oeaw.ac.at/types/person-person/#".
+        default_rel_type (str, optional): A default type which is used if no lookup dict is provided a KeyError is raised. Defaults to "In-relation-to".
+        lang (str, optional): The value of the label's lang tag. Defaults to "de".
+        entity_prefix (str, optional): Some prefix to add before the IDs of the entities. Defaults to "".
+        verbose (bool, optional): Prints if no match in the lookup dict is found. Defaults to False.
+
+    Returns:
+        Graph: A Graph object containing the SRPC3_in_social_relation
+    """  # noqa: E501
+    g = Graph()
+    source = f'{entity_prefix}{check_for_hash(node.attrib["active"])}'
+    target = f'{entity_prefix}{check_for_hash(node.attrib["passive"])}'
+    label = node.attrib["n"]
+    rel_type = default_rel_type
+    orig_rel_type = node.attrib["name"]
+    if lookup_dict:
+        try:
+            rel_type = lookup_dict[orig_rel_type]
+        except KeyError:
+            if verbose:
+                print(f"Could not find {orig_rel_type} in lookup_dict")
+    relation_uri = URIRef(f"{domain}{source}/{rel_type}/{target}")
+    g.add((relation_uri, RDF.type, SARI["SRPC3_in_social_relation"]))
+    g.add((relation_uri, RDFS.label, Literal(label, lang=lang)))
+    g.add(
+        (
+            relation_uri,
+            SARI["SRP3_relation_type"],
+            URIRef(f"{default_type_domain}{rel_type}"),
+        )
+    )
+    g.add((relation_uri, CIDOC["P01_has_domain"], URIRef(f"{domain}{source}")))
+    g.add((relation_uri, CIDOC["P02_has_range"], URIRef(f"{domain}{target}")))
+    return g
 
 
 def normalize_string(string: str) -> str:
