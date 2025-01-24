@@ -7,6 +7,7 @@ FRBROO = Namespace(
 INT = Namespace("https://w3id.org/lso/intro/beta202304#")
 SCHEMA = Namespace("https://schema.org/")
 SARI = Namespace("http://w3id.org/sari#")
+GEO = Namespace("http://www.opengis.net/ont/geosparql#")
 
 NSMAP = {
     "tei": "http://www.tei-c.org/ns/1.0",
