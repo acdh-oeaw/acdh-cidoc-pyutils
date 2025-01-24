@@ -404,6 +404,47 @@ returns
 <https://foo/bar/place__237979> ns1:P89_falls_within <https://foo/bar/place__50> .
 ```
 
+### creates E66_Formation and E68_Dissolution events
+```python
+from acdh_cidoc_pyutils import p95i_was_formed_by
+from rdflib import Graph, URIRef
+
+
+g = Graph()
+subj = URIRef("https://wienerschnitzler.org")
+label = "Wiener Moderne Verein"
+g += p95i_was_formed_by(
+    subj, start_date="2023-10-14", end_date="2025-12-31", label=f"{label} wurde gegründet", label_lang="de"
+)
+result = g.serialize(format="ttl")
+```
+returns
+```ttl
+@prefix ns1: <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://wienerschnitzler.org> ns1:P95i_was_formed_by <https://wienerschnitzler.org/formation-event> .
+
+<https://wienerschnitzler.org/dissolution-event> a ns1:E68_Dissolution ;
+    rdfs:label "Institution wurde aufgelöst"@de ;
+    ns1:P4_has_time-span <https://wienerschnitzler.org/dissolution-event/dissolution-time-span> .
+
+<https://wienerschnitzler.org/dissolution-event/dissolution-time-span> a ns1:E52_Time-Span ;
+    rdfs:label "2025-12-31"^^xsd:string ;
+    ns1:P82a_begin_of_the_begin "2025-12-31"^^xsd:date ;
+    ns1:P82b_end_of_the_end "2025-12-31"^^xsd:date .
+
+<https://wienerschnitzler.org/formation-event> a ns1:E66_Formation ;
+    rdfs:label "Wiener Moderne Verein wurde gegründet"@de ;
+    ns1:P4_has_time-span <https://wienerschnitzler.org/formation-event/formation-time-span> .
+
+<https://wienerschnitzler.org/formation-event/formation-time-span> a ns1:E52_Time-Span ;
+    rdfs:label "2023-10-14"^^xsd:string ;
+    ns1:P82a_begin_of_the_begin "2023-10-14"^^xsd:date ;
+    ns1:P82b_end_of_the_end "2023-10-14"^^xsd:date .
+```
+
 ### normalize_string
 
 ```python

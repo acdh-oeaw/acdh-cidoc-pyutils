@@ -22,7 +22,7 @@ def tei_relation_to_SRPC3_in_social_relation(
     default_rel_type="In-relation-to",
     lang="de",
     verbose=False,
-    entity_prefix=""
+    entity_prefix="",
 ) -> Graph:
     """converts a specific TEI relation to SRPC3_in_social_relation
 
@@ -629,4 +629,42 @@ def p89_falls_within(
         return g
     range_uri = URIRef(f"{domain}{range_id}")
     g.add((subj, CIDOC["P89_falls_within"], range_uri))
+    return g
+
+
+def p95i_was_formed_by(
+    uri: URIRef,
+    start_date=None,
+    end_date=None,
+    label="Institution wurde gegründet",
+    end_label="Institution wurde aufgelöst",
+    label_lang="de",
+):
+    """
+    Create a RDF graph representing the formation event of an institution.
+    Args:
+        uri (URIRef): The URI of the institution.
+        start_date (str, optional): The start date of the formation event. Defaults to None.
+        end_date (str, optional): The end date of the formation event. Defaults to None.
+        label (str, optional): The label for the formation event. Defaults to "Institution wurde gegründet".
+        label_lang (str, optional): The language of the label. Defaults to "de".
+    Returns:
+        Graph: An RDF graph containing the formation event information.
+    """
+    g = Graph()
+    formation_uri = URIRef(f"{uri}/formation-event")
+    g.add((uri, CIDOC["P95i_was_formed_by"], formation_uri))
+    g.add((formation_uri, RDF.type, CIDOC["E66_Formation"]))
+    g.add((formation_uri, RDFS.label, Literal(label, lang=label_lang)))
+    if start_date:
+        start_uri = URIRef(f"{formation_uri}/formation-time-span")
+        g.add((formation_uri, CIDOC["P4_has_time-span"], start_uri))
+        g += create_e52(start_uri, begin_of_begin=start_date, end_of_end=start_date)
+    if end_date:
+        dissolution_uri = URIRef(f"{uri}/dissolution-event")
+        g.add((dissolution_uri, RDF.type, CIDOC["E68_Dissolution"]))
+        g.add((dissolution_uri, RDFS.label, Literal(end_label, lang=label_lang)))
+        end_uri = URIRef(f"{dissolution_uri}/dissolution-time-span")
+        g.add((dissolution_uri, CIDOC["P4_has_time-span"], end_uri))
+        g += create_e52(end_uri, begin_of_begin=end_date, end_of_end=end_date)
     return g
