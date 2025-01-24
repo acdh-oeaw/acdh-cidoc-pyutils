@@ -18,7 +18,7 @@ requirements = [
 setup(
     author="Peter Andorfer",
     author_email="peter.andorfer@oeaw.ac.at",
-    python_requires=">=3.9",
+    python_requires=">=3.8",
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
@@ -36,6 +36,6 @@ setup(
     test_suite="tests",
     tests_require=[],
     url="https://github.com/acdh-oeaw/acdh-cidoc-pyutils",
-    version="v1.1",
+    version="v1.2",
     zip_safe=False,
 )
