@@ -18,6 +18,7 @@ from acdh_cidoc_pyutils import (
     make_affiliations,
     p89_falls_within,
     tei_relation_to_SRPC3_in_social_relation,
+    p95i_was_formed_by,
 )
 from acdh_cidoc_pyutils.namespaces import NSMAP, CIDOC
 
@@ -547,7 +548,7 @@ mein schatz ich liebe    dich
                 domain="https://pmb.acdh.oeaw.ac.at/entity/",
                 lookup_dict=lookup_dict,
                 verbose=True,
-                entity_prefix="person_"
+                entity_prefix="person_",
             )
         result = g.serialize(format="ttl")
         g.serialize("relations.ttl", format="ttl")
@@ -560,3 +561,31 @@ mein schatz ich liebe    dich
                 lookup_dict=lookup_dict,
                 verbose=False,
             )
+
+    def test_015_p95i_was_formed_by(self):
+        g = Graph()
+        subj = URIRef("https://www.wikidata.org/wiki/Q392310")
+        label = "LASK Linz"
+        g += p95i_was_formed_by(
+            subj,
+            start_date="1908-07-25",
+            label=f"{label} wurde gegründet",
+            label_lang="de",
+        )
+        result = g.serialize(format="ttl")
+        g.serialize("E66_Formation.ttl", format="ttl")
+        self.assertTrue("P95i_was_formed_by" in result)
+
+        g = Graph()
+        subj = URIRef("https://wienerschnitzler.org")
+        label = "Wiener Moderne Verein"
+        g += p95i_was_formed_by(
+            subj,
+            start_date="2023-10-14",
+            end_date="2025-12-31",
+            label=f"{label} wurde gegründet",
+            label_lang="de",
+        )
+        result = g.serialize(format="ttl")
+        g.serialize("E68_Dissolution.ttl", format="ttl")
+        self.assertTrue("aufgelöst" in result)
