@@ -18,7 +18,7 @@ requirements = [
 setup(
     author="Peter Andorfer",
     author_email="peter.andorfer@oeaw.ac.at",
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
