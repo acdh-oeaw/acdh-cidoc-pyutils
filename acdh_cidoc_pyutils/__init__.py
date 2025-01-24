@@ -11,6 +11,7 @@ from acdh_cidoc_pyutils.namespaces import (
     NSMAP,
     DATE_ATTRIBUTE_DICT,
     SARI,
+    GEO
 )
 
 
@@ -97,7 +98,7 @@ def coordinates_to_p168(
         (
             subj,
             CIDOC["P168_place_is_defined_by"],
-            Literal(f"Point({lng} {lat})", datatype="geo:wktLiteral"),
+            Literal(f"Point({lng} {lat})", datatype=GEO["wktLiteral"]),
         )
     )
     return g
