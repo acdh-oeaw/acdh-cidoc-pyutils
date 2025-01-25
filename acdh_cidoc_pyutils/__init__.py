@@ -411,12 +411,13 @@ def make_e42_identifiers(
             g.add((idno_uri, RDF.type, CIDOC["E42_Identifier"]))
             g.add((idno_uri, CIDOC["P2_has_type"], URIRef(idno_type_base_uri)))
             g.add((URIRef(idno_type_base_uri), RDF.type, CIDOC["E55_Type"]))
+            label = idno_type_base_uri.split("/")[-1]
             g.add(
                 (
                     URIRef(idno_type_base_uri),
                     RDFS.label,
                     Literal(
-                        f"Identifier of type: {idno_type_base_uri.split("/")[-1]}",
+                        f"Identifier of type: '{label}'",
                         lang="en",
                     ),
                 )
