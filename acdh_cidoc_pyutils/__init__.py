@@ -361,6 +361,20 @@ def make_e42_identifiers(
     same_as=True,
     default_prefix="Identifier: ",
 ) -> Graph:
+    """
+    Creates RDF triples for E42 Identifiers based on the provided XML node.
+    Args:
+        subj (URIRef): The subject URIRef to which the identifiers are related.
+        node (Element): The XML element containing identifier information.
+        type_domain (str, optional): The base URI for the identifier types. Defaults to "https://foo-bar/".
+        default_lang (str, optional): The default language for the labels. Defaults to "de".
+        set_lang (bool, optional): Whether to set the language for the labels. Defaults to False.
+        same_as (bool, optional): Whether to add owl:sameAs triples for HTTP identifiers. Defaults to True.
+        default_prefix (str, optional): The prefix for the identifier labels. Defaults to "Identifier: ".
+    Returns:
+        Graph: An RDF graph containing the generated triples.
+    """
+
     g = Graph()
     try:
         lang = node.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
