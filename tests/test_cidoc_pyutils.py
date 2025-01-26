@@ -3,6 +3,8 @@ import lxml.etree as ET
 
 from lxml.etree import Element
 from rdflib import Graph, URIRef, RDF
+from acdh_tei_pyutils.tei import TeiReader
+from acdh_tei_pyutils.utils import get_xmlid
 
 from acdh_cidoc_pyutils import (
     date_to_literal,
@@ -243,6 +245,28 @@ mein schatz ich liebe    dich
         self.assertTrue("@it" in data)
         self.assertTrue('dfs:label "Gulbransson, Olaf"' in data)
         self.assertTrue('rdfs:label "cosi, maxi"@it' in data)
+
+    def test_007a_make_appellations(self):
+        g = Graph()
+        sample = """
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <person xml:id="person__244261">
+        <persName>
+            <surname>Friedrich VII. von Baden-Durlach</surname>
+        </persName>
+    </person>
+</TEI>
+"""
+        doc = TeiReader(sample)
+        node = doc.any_xpath(".//tei:person")[0]
+        xml_id = get_xmlid(node)
+        subj = URIRef(f"https://foo.bar/{xml_id}")
+        g.add((subj, RDF.type, CIDOC["E21_Person"]))
+        g += make_appellations(subj, node)
+        data = g.serialize(format="turtle")
+        self.assertTrue("Friedrich VII. von Baden-Durlach" in data)
+        self.assertTrue("appellation" in data)
+        g.serialize("surname.ttl", format="turtle")
 
     def test_008_make_e42_identifiers(self):
         g = Graph()
