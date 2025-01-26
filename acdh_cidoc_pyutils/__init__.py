@@ -340,7 +340,25 @@ def make_appellations(
             label = f"Appellation of type: {cur_type_uri.split('/')[-1]}'"
             g.add((cur_type_uri, RDFS.label, Literal(label, lang="en")))
             g.add((app_uri, CIDOC["P2_has_type"], cur_type_uri))
-
+        else:
+            app_uri = URIRef(f"{subj}/appellation")
+            g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
+            g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
+            entity_label_str, cur_lang = make_entity_label(
+                node.xpath(xpath_expression, namespaces=NSMAP)[0]
+            )
+            g.add(
+                (
+                    app_uri,
+                    RDFS.label,
+                    Literal(normalize_string(entity_label_str), lang=cur_lang),
+                )
+            )
+            cur_type_uri = URIRef(f"{type_uri.lower()}")
+            g.add((cur_type_uri, RDF.type, CIDOC["E55_Type"]))
+            label = f"Appellation of type: {cur_type_uri.split('/')[-1]}'"
+            g.add((cur_type_uri, RDFS.label, Literal(label, lang="en")))
+            g.add((app_uri, CIDOC["P2_has_type"], cur_type_uri))
     try:
         first_name_el = node.xpath(xpath_expression, namespaces=NSMAP)[0]
     except IndexError:
