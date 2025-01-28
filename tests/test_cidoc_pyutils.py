@@ -510,7 +510,10 @@ mein schatz ich liebe    dich
             person_label=person_label,
             org_id_xpath="./tei:orgName[1]/@key",
             org_label_xpath="./tei:orgName[1]//text()",
+            add_org_object=True,
         )
+        result = g.serialize(format="ttl")
+        self.assertTrue("<https://foo/bar/pmb51868> a ns1:E74_Group ;" in result)
         g.serialize("affiliations1.ttl")
 
     def test_013_p89_falls_within(self):
