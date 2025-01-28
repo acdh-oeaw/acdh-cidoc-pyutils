@@ -516,7 +516,22 @@ def make_affiliations(
     org_id_xpath="./@ref",
     org_label_xpath="",
     lang="en",
+    add_org_object=False,
 ):
+    """
+    Creates RDF triples representing a person's affiliations with organizations.
+    Args:
+        subj (URIRef): The URI of the subject (person) whose affiliations are being described.
+        node (Element): The XML element containing affiliation information.
+        domain (str): The base URI domain for constructing affiliation URIs.
+        person_label (str): The label for the person.
+        org_id_xpath (str, optional): XPath expression to extract the organization ID. Defaults to "./@ref".
+        org_label_xpath (str, optional): XPath expression to extract the organization label. Defaults to "".
+        lang (str, optional): Language code for labels. Defaults to "en".
+        add_org_object (bool, optional): Whether to add the organization as an object in the graph. Defaults to False.
+    Returns:
+        Graph: An RDF graph containing the affiliations and related events.
+    """
     g = Graph()
     for i, x in enumerate(node.xpath(".//tei:affiliation", namespaces=NSMAP)):
         try:
@@ -532,6 +547,9 @@ def make_affiliations(
         if affiliation_id.startswith("#"):
             affiliation_id = affiliation_id[1:]
         org_affiliation_uri = URIRef(f"{domain}{affiliation_id}")
+        if add_org_object:
+            g.add((org_affiliation_uri, RDF.type, CIDOC["E74_Group"]))
+            g.add((org_affiliation_uri, RDFS.label, Literal(org_label, lang=lang)))
         join_uri = URIRef(f"{subj}/joining/{affiliation_id}/{i}")
         join_label = normalize_string(f"{person_label} joins {org_label}")
         g.add((join_uri, RDF.type, CIDOC["E85_Joining"]))
