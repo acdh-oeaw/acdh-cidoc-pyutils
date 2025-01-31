@@ -635,7 +635,10 @@ mein schatz ich liebe    dich
         result = g.serialize(format="ttl")
         self.assertTrue("P1_is_identified_by" in result)
         _, g, _ = teidoc_as_f24_publication_expression(
-            file_path, domain, ".//tei:titleStmt/tei:title[@level='a']", add_mentions=False
+            file_path,
+            domain,
+            ".//tei:titleStmt/tei:title[@level='a']",
+            add_mentions=False,
         )
         g.serialize(file_name.replace(".xml", "no-mentions.ttl"))
         result = g.serialize(format="ttl")
