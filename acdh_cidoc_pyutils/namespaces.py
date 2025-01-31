@@ -4,6 +4,7 @@ CIDOC = Namespace("http://www.cidoc-crm.org/cidoc-crm/")
 FRBROO = Namespace(
     "https://cidoc-crm.org/frbroo/sites/default/files/FRBR2.4-draft.rdfs#"
 )
+SARI_FRBROO = Namespace("http://iflastandards.info/ns/fr/frbr/frbroo/")
 INT = Namespace("https://w3id.org/lso/intro/beta202304#")
 SCHEMA = Namespace("https://schema.org/")
 SARI = Namespace("http://w3id.org/sari#")
