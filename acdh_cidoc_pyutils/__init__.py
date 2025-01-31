@@ -1,18 +1,22 @@
 import uuid
+import os
 from typing import Union
 
 from lxml.etree import Element
 from rdflib import Graph, Literal, URIRef, XSD, RDF, RDFS, OWL
 from slugify import slugify
-from acdh_tei_pyutils.utils import make_entity_label, check_for_hash
+from acdh_tei_pyutils.utils import make_entity_label, check_for_hash, extract_fulltext
+from acdh_tei_pyutils.tei import TeiReader
 from acdh_cidoc_pyutils.namespaces import (
     CIDOC,
     FRBROO,
+    SARI_FRBROO,
     NSMAP,
     DATE_ATTRIBUTE_DICT,
     SARI,
     GEO,
 )
+from acdh_cidoc_pyutils.utils import remove_trailing_slash
 
 
 def tei_relation_to_SRPC3_in_social_relation(
@@ -705,3 +709,67 @@ def p95i_was_formed_by(
         g.add((dissolution_uri, CIDOC["P4_has_time-span"], end_uri))
         g += create_e52(end_uri, begin_of_begin=end_date, end_of_end=end_date)
     return g
+
+
+def teidoc_as_f24_publication_expression(
+    path_to_file: str,
+    domain: str,
+    title_xpath=".//tei:titleStmt/tei:title[1]",
+    mentions_xpath=".//tei:rs[@type='person' or @type='place' or @type='org' and @ref]",
+    add_mentions=True,
+    default_lang="de",
+    type_uri="https://pfp-schema.acdh.oeaw.ac.at/types/tei-document",
+    type_label="A TEI/XML encoded text",
+    type_lang="en",
+) -> tuple[URIRef, Graph, list]:
+    """
+    Converts a TEI document into an RDF graph representing a CIDOC CRM F24 Publication Expression.
+    Args:
+        path_to_file (str): Path to the TEI XML file.
+        domain (str): Base URI domain for the generated RDF resources.
+        title_xpath (str): XPath expression to extract the title from the TEI document.
+        mentions_xpath (str, optional): XPath expression to extract mentions of entities (default is ".//tei:rs[@type='person' or @type='place' or @type='org' and @ref]").
+        add_mentions (bool, optional): Whether to add mentions of entities (default is True).
+        default_lang (str, optional): Default language for literals (default is "de").
+        type_uri (str, optional): URI for the type of the TEI document (default is "https://pfp-schema.acdh.oeaw.ac.at/types/tei-document").
+        type_label (str, optional): Label for the type of the TEI document (default is "A TEI/XML encoded text").
+        type_lang (str, optional): Language for the type label (default is "en").
+    Returns:
+        tuple[URIRef, Graph, list]: A tuple containing the URI of the publication expression, the RDF graph and a list of mentioned entity-ids and their type.
+    """  # noqa: E501
+
+    domain = remove_trailing_slash(domain)
+    g = Graph()
+    doc_id = os.path.split(path_to_file)[-1]
+    subj = URIRef(f"{domain}/{doc_id}")
+    g.add((subj, RDF.type, SARI_FRBROO["F24_Publication_Expression"]))
+    doc = TeiReader(path_to_file)
+
+    # title
+    title_label = extract_fulltext(doc.any_xpath(title_xpath)[0])
+    title_literal = Literal(title_label, lang=default_lang)
+    g.add((subj, RDFS.label, title_literal))
+
+    # appellation-type
+    app_type_uri = URIRef(type_uri)
+    g.add((app_type_uri, RDF.type, CIDOC["E55_Type"]))
+    g.add((app_type_uri, RDFS.label, Literal(type_label, lang=type_lang)))
+
+    # appellation
+    app_uri = URIRef(f"{subj}/appellation")
+    g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
+    g.add((app_uri, RDFS.label, title_literal))
+    g.add((app_uri, CIDOC["P2_has_type"], app_type_uri))
+    g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
+
+    # mentions
+    mentions = []
+    for x in doc.any_xpath(mentions_xpath):
+        ref = x.attrib["ref"]
+        type = x.get("type", "unknown")
+        mentions.append([ref, type])
+    if add_mentions:
+        for x in mentions:
+            g.add((subj, CIDOC["P67_refers_to"], URIRef(f"{domain}/{x[0]}")))
+
+    return subj, g, mentions

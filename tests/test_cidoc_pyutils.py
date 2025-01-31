@@ -1,10 +1,13 @@
 import unittest
+import os
 import lxml.etree as ET
 
 from lxml.etree import Element
 from rdflib import Graph, URIRef, RDF
 from acdh_tei_pyutils.tei import TeiReader
 from acdh_tei_pyutils.utils import get_xmlid
+
+from acdh_cidoc_pyutils.utils import remove_trailing_slash
 
 from acdh_cidoc_pyutils import (
     date_to_literal,
@@ -21,6 +24,7 @@ from acdh_cidoc_pyutils import (
     p89_falls_within,
     tei_relation_to_SRPC3_in_social_relation,
     p95i_was_formed_by,
+    teidoc_as_f24_publication_expression,
 )
 from acdh_cidoc_pyutils.namespaces import NSMAP, CIDOC
 
@@ -119,8 +123,11 @@ class TestTestTest(unittest.TestCase):
     def tearDown(self):
         """Tear down test fixtures, if any."""
 
-    def test_001_smoke(self):
-        self.assertEqual(1, 1)
+    def test_001_trailing_slash(self):
+        uri = "foo/bar/"
+        self.assertEqual("foo/bar", remove_trailing_slash(uri))
+        uri = "foo/bar"
+        self.assertEqual("foo/bar", remove_trailing_slash(uri))
 
     def test_002_dates(self):
         for i, x in enumerate(DATE_STRINGS):
@@ -616,3 +623,20 @@ mein schatz ich liebe    dich
         result = g.serialize(format="ttl")
         g.serialize("E68_Dissolution.ttl", format="ttl")
         self.assertTrue("aufgelöst" in result)
+
+    def test_016_teidoc_as_f24_publication_expression(self):
+        file_name = "L02643.xml"
+        domain = "https://schnitzler-briefe.acdh.oeaw.ac.at"
+        file_path = os.path.join("tests", file_name)
+        _, g, _ = teidoc_as_f24_publication_expression(
+            file_path, domain, ".//tei:titleStmt/tei:title[@level='a']"
+        )
+        g.serialize(file_name.replace(".xml", ".ttl"))
+        result = g.serialize(format="ttl")
+        self.assertTrue("P1_is_identified_by" in result)
+        _, g, _ = teidoc_as_f24_publication_expression(
+            file_path, domain, ".//tei:titleStmt/tei:title[@level='a']", add_mentions=False
+        )
+        g.serialize(file_name.replace(".xml", "no-mentions.ttl"))
+        result = g.serialize(format="ttl")
+        self.assertTrue("P1_is_identified_by" in result)
