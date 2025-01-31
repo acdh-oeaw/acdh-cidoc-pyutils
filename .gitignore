@@ -136,3 +136,4 @@ dmypy.json
 hansi.*
 play.*
 *.xml
+!tests/L02643.xml
