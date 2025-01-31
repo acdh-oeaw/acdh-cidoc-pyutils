@@ -715,7 +715,7 @@ def teidoc_as_f24_publication_expression(
     path_to_file: str,
     domain: str,
     title_xpath=".//tei:titleStmt/tei:title[1]",
-    mentions_xpath=".//tei:rs[@type='person' or @type='place' or @type='org' and @ref]",
+    mentions_xpath=".//tei:rs[@ref and (@type='person' or @type='place' or @type='org')]",
     add_mentions=True,
     default_lang="de",
     type_uri="https://pfp-schema.acdh.oeaw.ac.at/types/tei-document",
