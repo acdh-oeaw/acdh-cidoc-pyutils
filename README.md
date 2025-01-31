@@ -491,6 +491,47 @@ print(extract_begin_end(date_object))
 # ('1800', '1900-12-12')
 ```
 
+### Convert a TEI document into an RDF graph representing a CIDOC CRM F24 Publication Expression.
+
+```python
+from acdh_cidoc_pyutils import teidoc_as_f24_publication_expression
+
+file_path = "L02643.xml"
+domain = "https://schnitzler-briefe.acdh.oeaw.ac.at"
+
+uri, g, mentions = teidoc_as_f24_publication_expression(
+    file_path, domain, ".//tei:titleStmt/tei:title[@level='a']"
+)
+g.serialize(file_name.replace(".xml", ".ttl"))
+```
+returns 
+```ttl
+@prefix ns1: <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<https://schnitzler-briefe.acdh.oeaw.ac.at/L02643.xml> a <http://iflastandards.info/ns/fr/frbr/frbroo/F24_Publication_Expression> ;
+    rdfs:label "Paul Goldmann an Arthur Schnitzler, 6. 8. 1889"@de ;
+    ns1:P1_is_identified_by <https://schnitzler-briefe.acdh.oeaw.ac.at/L02643.xml/appellation> ;
+    ns1:P67_refers_to <https://schnitzler-briefe.acdh.oeaw.ac.at/#pmb11485>,
+        <https://schnitzler-briefe.acdh.oeaw.ac.at/#pmb12698>,
+        <https://schnitzler-briefe.acdh.oeaw.ac.at/#pmb169237>,
+        <https://schnitzler-briefe.acdh.oeaw.ac.at/#pmb2121>,
+        <https://schnitzler-briefe.acdh.oeaw.ac.at/#pmb213>,
+        <https://schnitzler-briefe.acdh.oeaw.ac.at/#pmb29698>,
+        <https://schnitzler-briefe.acdh.oeaw.ac.at/#pmb50>,
+        <https://schnitzler-briefe.acdh.oeaw.ac.at/#pmb52510>,
+        <https://schnitzler-briefe.acdh.oeaw.ac.at/#pmb53101>,
+        <https://schnitzler-briefe.acdh.oeaw.ac.at/#pmb53104>,
+        <https://schnitzler-briefe.acdh.oeaw.ac.at/#pmb88392> .
+
+<https://pfp-schema.acdh.oeaw.ac.at/types/tei-document> a ns1:E55_Type ;
+    rdfs:label "A TEI/XML encoded text"@en .
+
+<https://schnitzler-briefe.acdh.oeaw.ac.at/L02643.xml/appellation> a ns1:E33_E41_Linguistic_Appellation ;
+    rdfs:label "Paul Goldmann an Arthur Schnitzler, 6. 8. 1889"@de ;
+    ns1:P2_has_type <https://pfp-schema.acdh.oeaw.ac.at/types/tei-document> .
+```
+
 ## development
 
 * `pip install -r requirements_dev.txt`
