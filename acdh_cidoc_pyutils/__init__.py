@@ -766,8 +766,9 @@ def teidoc_as_f24_publication_expression(
     mentions = []
     for x in doc.any_xpath(mentions_xpath):
         ref = x.attrib["ref"]
-        type = x.get("type", "unknown")
-        mentions.append([ref, type])
+        for y in ref.split(" "):
+            type = x.get("type", "unknown")
+            mentions.append([check_for_hash(y), type])
     if add_mentions:
         for x in mentions:
             g.add((subj, CIDOC["P67_refers_to"], URIRef(f"{domain}/{x[0]}")))
