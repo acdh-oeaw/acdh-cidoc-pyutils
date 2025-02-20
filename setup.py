@@ -12,6 +12,7 @@ requirements = [
     "rdflib",
     "acdh-tei-pyutils",
     "python-slugify",
+    "acdh-arche-assets",
 ]
 
 
@@ -36,6 +37,6 @@ setup(
     test_suite="tests",
     tests_require=[],
     url="https://github.com/acdh-oeaw/acdh-cidoc-pyutils",
-    version="1.6.2",
+    version="1.7",
     zip_safe=False,
 )
