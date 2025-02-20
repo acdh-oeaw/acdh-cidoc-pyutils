@@ -5,6 +5,7 @@ from typing import Union
 from lxml.etree import Element
 from rdflib import Graph, Literal, URIRef, XSD, RDF, RDFS, OWL
 from slugify import slugify
+from AcdhArcheAssets.uri_norm_rules import get_normalized_uri
 from acdh_tei_pyutils.utils import make_entity_label, check_for_hash, extract_fulltext
 from acdh_tei_pyutils.tei import TeiReader
 from acdh_cidoc_pyutils.namespaces import (
@@ -454,7 +455,7 @@ def make_e42_identifiers(
                             subj,
                             OWL.sameAs,
                             URIRef(
-                                x.text,
+                                get_normalized_uri(x.text),
                             ),
                         )
                     )

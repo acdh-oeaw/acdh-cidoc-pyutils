@@ -643,3 +643,30 @@ mein schatz ich liebe    dich
         g.serialize(file_name.replace(".xml", "no-mentions.ttl"))
         result = g.serialize(format="ttl")
         self.assertTrue("P1_is_identified_by" in result)
+
+    def test_017_normalize_sameas(self):
+        sample = """
+        <TEI xmlns="http://www.tei-c.org/ns/1.0">
+            <person xml:id="person__244261">
+                <persName>
+                    <surname>Friedrich VII. von Baden-Durlach</surname>
+                </persName>
+                <idno type="GND">http://d-nb.info/gnd/101791799X</idno>
+            </person>
+        </TEI>
+        """
+        g = Graph()
+        doc = TeiReader(sample)
+        for x in doc.any_xpath(".//tei:person"):
+            xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
+            item_id = f"https://foo/bar/{xml_id}"
+            subj = URIRef(item_id)
+            g.add((subj, RDF.type, CIDOC["hansi"]))
+            g += make_e42_identifiers(
+                subj,
+                x,
+                type_domain="https://sk.acdh.oeaw.ac.at/types",
+            )
+        g.serialize("normalized.ttl")
+        result = g.serialize(format="ttl")
+        self.assertTrue("https://d-nb.info/gnd/101791799X" in result)
