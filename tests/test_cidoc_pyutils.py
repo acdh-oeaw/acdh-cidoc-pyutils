@@ -564,6 +564,8 @@ mein schatz ich liebe    dich
         from-iso="1936-01-01" n="Schnitzler, Hans — ist verheiratet mit — Mautner, Lisa"/>
     <relation name="ist-asdfverheiratet-mit" active="#21208" passive="#24420"
         n="Schnitzler, Hans — ist verheiratet mit — Mautner, Lisa"/>
+    <relation name="ist-verlobt-mit" active="#21208" passive="#24420"
+        n="Schnitzler, Hans — ist verheiratet mit — Mautner, Lisa"/>
     <relation name="in-intimer-beziehung-zu" active="#pmb28964" passive="#pmb38513"
         from-iso="1932-01-01" to-iso="1942-01-01"
         n="Viertel, Salka — in intimer Beziehung zu — Reinhardt, Gottfried"/>
@@ -572,8 +574,8 @@ mein schatz ich liebe    dich
         g = Graph()
         lookup_dict = {
             "in-intimer-beziehung-zu": "Intimate-relation",
-            "ist-verlobt-mit": "Is-engaged-to",
-            "ist-verheiratet-mit": "Is-married-to",
+            "ist-verlobt-mit": "https://hansi/sumsi/#Is-engaged-to",
+            "ist-verheiratet-mit": "https://hansi/sumsi/Is-married-to",
         }
         doc = ET.fromstring(sample)
         for x in doc.xpath(".//tei:relation", namespaces=NSMAP):
