@@ -761,17 +761,38 @@ def teidoc_as_f24_publication_expression(
     title_literal = Literal(title_label, lang=default_lang)
     g.add((subj, RDFS.label, title_literal))
 
-    # appellation-type
-    app_type_uri = URIRef(type_uri)
-    g.add((app_type_uri, RDF.type, CIDOC["E55_Type"]))
-    g.add((app_type_uri, RDFS.label, Literal(type_label, lang=type_lang)))
+    # subj-type
+    subj_type_uri = URIRef(type_uri)
+    g.add((subj, CIDOC["P2_has_type"], subj_type_uri))
+    g.add((subj_type_uri, RDF.type, CIDOC["E55_Type"]))
+    g.add((subj_type_uri, RDFS.label, Literal(type_label, lang=type_lang)))
+
+    # identifier
+    id_uri = URIRef(f"{subj}/identifier")
+    g.add((subj, CIDOC["P1_is_identified_by"], id_uri))
+    g.add((id_uri, RDF.type, CIDOC["E42_Identifier"]))
+    g.add((id_uri, RDFS.label, Literal(doc_id)))
+
+    # id-type
+    id_type_uri = URIRef(f"{type_uri}/file-name")
+    g.add((id_uri, CIDOC["P2_has_type"], id_type_uri))
+    g.add((id_type_uri, RDF.type, CIDOC["E55_Type"]))
+    g.add((id_type_uri, RDFS.label, Literal("Filename", lang="en")))
+
+    # <https://foo/bar/dworg00001/identifier/DWorg00001> a ns1:E42_Identifier ;
+    # rdfs:label "sumsibumsi 123: DWorg00001"@it ;
+    # ns1:P2_has_type <https://sk.acdh.oeaw.ac.at/types/idno/xml-id> ;
+    # rdf:value "DWorg00001" .
 
     # appellation
     app_uri = URIRef(f"{subj}/appellation")
+    app_type_uri = URIRef(f"{subj_type_uri}/appellation")
     g.add((app_uri, RDF.type, CIDOC["E33_E41_Linguistic_Appellation"]))
     g.add((app_uri, RDFS.label, title_literal))
     g.add((app_uri, CIDOC["P2_has_type"], app_type_uri))
     g.add((subj, CIDOC["P1_is_identified_by"], app_uri))
+    g.add((app_type_uri, RDF.type, CIDOC["E55_Type"]))
+    g.add((app_type_uri, RDFS.label, Literal("Document Title", lang="en")))
 
     # mentions
     mentions = []
