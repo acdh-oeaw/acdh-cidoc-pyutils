@@ -57,16 +57,26 @@ def tei_relation_to_SRPC3_in_social_relation(
         except KeyError:
             if verbose:
                 print(f"Could not find {orig_rel_type} in lookup_dict")
-    relation_uri = URIRef(f"{domain}{source}/{rel_type}/{target}")
+    if rel_type.startswith("http"):
+        if "#" in rel_type:
+            rel_type_name = rel_type.split("#")[-1]
+        else:
+            rel_type_name = remove_trailing_slash(rel_type).split("/")[-1]
+    else:
+        rel_type_name = rel_type
+    relation_uri = URIRef(f"{domain}{source}/{rel_type_name}/{target}")
     g.add((relation_uri, RDF.type, SARI["SRPC3_in_social_relation"]))
     g.add((relation_uri, RDFS.label, Literal(label, lang=lang)))
-    g.add(
-        (
-            relation_uri,
-            SARI["SRP3_relation_type"],
-            URIRef(f"{default_type_domain}{rel_type}"),
+    if rel_type.startswith("http"):
+        g.add((relation_uri, SARI["SRP3_relation_type"], URIRef(rel_type)))
+    else:
+        g.add(
+            (
+                relation_uri,
+                SARI["SRP3_relation_type"],
+                URIRef(f"{default_type_domain}{rel_type}"),
+            )
         )
-    )
     g.add((relation_uri, CIDOC["P01_has_domain"], URIRef(f"{domain}{source}")))
     g.add((relation_uri, CIDOC["P02_has_range"], URIRef(f"{domain}{target}")))
     return g
