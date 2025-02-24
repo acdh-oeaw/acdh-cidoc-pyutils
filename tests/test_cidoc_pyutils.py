@@ -90,6 +90,9 @@ sample = """
     <bibl xml:id="DWbible01113">
         <title>Hansi4ever</title>
     </bibl>
+    <bibl xml:id="superduperbibl">
+        <title>Superduper</title>
+    </bibl>
     <person xml:id="hansi12343">
         <test></test>
     </person>
@@ -253,6 +256,7 @@ mein schatz ich liebe    dich
         self.assertTrue("@it" in data)
         self.assertTrue('dfs:label "Gulbransson, Olaf"' in data)
         self.assertTrue('rdfs:label "cosi, maxi"@it' in data)
+        self.assertTrue("Superduper" in data)
 
     def test_007a_make_appellations(self):
         g = Graph()

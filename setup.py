@@ -37,6 +37,6 @@ setup(
     test_suite="tests",
     tests_require=[],
     url="https://github.com/acdh-oeaw/acdh-cidoc-pyutils",
-    version="1.9",
+    version="1.10",
     zip_safe=False,
 )
