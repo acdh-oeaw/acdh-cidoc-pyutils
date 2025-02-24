@@ -57,6 +57,7 @@ sample = """
         <placeName xml:lang="de" type="simple_name">Reval</placeName>
         <placeName xml:lang="und" type="alt_label">Tallinn</placeName>
         <idno type="pmb">https://pmb.acdh.oeaw.ac.at/entity/42085/</idno>
+        <idno type="pmb">https://foo-bar-hansi-sumsi/</idno>
         <idno type="URI" subtype="geonames">https://www.geonames.org/588409</idno>
         <idno subtype="foobarid">12345</idno>
         <location><geo>123 456</geo></location>
@@ -301,12 +302,14 @@ mein schatz ich liebe    dich
                 x,
                 type_domain="https://sk.acdh.oeaw.ac.at/types",
                 default_lang="it",
+                authority_patterns=[],
                 set_lang=True,
             )
             data = g.serialize(format="turtle")
             self.assertTrue("@it" in data)
             self.assertTrue("idno/foobarid" in data)
             self.assertTrue("owl:sameAs <https://" in data)
+            self.assertTrue("https://foo-bar-hansi-sumsi/" in data)
             g.serialize("ids.ttl", format="turtle")
         g = Graph()
         default_prefix = "sumsibumsi 123: "
@@ -331,7 +334,33 @@ mein schatz ich liebe    dich
             self.assertTrue(default_prefix in data)
             self.assertFalse("owl:sameAs <https://" in data)
             self.assertTrue(match_value in data)
-            g.serialize("ids.ttl", format="turtle")
+            g.serialize("ids1.ttl", format="turtle")
+
+        g = Graph()
+        default_prefix = "sumsibumsi 123: "
+        match_value = 'rdf:value "DWpl'
+        for x in doc.xpath(".//tei:org|tei:place", namespaces=NSMAP):
+            xml_id = x.attrib["{http://www.w3.org/XML/1998/namespace}id"].lower()
+            item_id = f"https://foo/bar/{xml_id}"
+            subj = URIRef(item_id)
+            g.add((subj, RDF.type, CIDOC["hansi"]))
+            g += make_e42_identifiers(
+                subj,
+                x,
+                type_domain="https://sk.acdh.oeaw.ac.at/types",
+                default_lang="it",
+                set_lang=True,
+                same_as=True,
+                default_prefix=default_prefix,
+            )
+            data = g.serialize(format="turtle")
+            self.assertFalse("owl:sameAs <https://foo-bar-hansi-sumsi/>" in data)
+            # self.assertTrue("@it" in data)
+            self.assertTrue("idno/foobarid" in data)
+            self.assertTrue(default_prefix in data)
+            self.assertTrue("owl:sameAs <https://" in data)
+            self.assertTrue(match_value in data)
+            g.serialize("ids3.ttl", format="turtle")
 
     def test_009_coordinates(self):
         doc = ET.fromstring(sample)

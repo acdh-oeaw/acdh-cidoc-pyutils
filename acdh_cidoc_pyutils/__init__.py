@@ -19,6 +19,16 @@ from acdh_cidoc_pyutils.namespaces import (
 )
 from acdh_cidoc_pyutils.utils import remove_trailing_slash
 
+authority_patterns = [
+    "pmb.acdh.oeaw.ac.at",
+    "geonames",
+    "d-nb.info",
+    "lobid.org",
+    "wikidata.org",
+    "viaf",
+    "getty",
+]
+
 
 def tei_relation_to_SRPC3_in_social_relation(
     node: Element,
@@ -392,6 +402,7 @@ def make_e42_identifiers(
     default_lang="de",
     set_lang=False,
     same_as=True,
+    authority_patterns=authority_patterns,
     default_prefix="Identifier: ",
 ) -> Graph:
     """
@@ -460,15 +471,20 @@ def make_e42_identifiers(
             g.add((idno_uri, RDF.value, Literal(normalize_string(x.text))))
             if same_as:
                 if x.text.startswith("http"):
-                    g.add(
-                        (
-                            subj,
-                            OWL.sameAs,
-                            URIRef(
-                                get_normalized_uri(x.text),
-                            ),
+                    normalized_uri = get_normalized_uri(x.text)
+                    if authority_patterns:
+                        for pattern in authority_patterns:
+                            if pattern in normalized_uri:
+                                g.add((subj, OWL.sameAs, URIRef(normalized_uri)))
+                                break
+                    else:
+                        g.add(
+                            (
+                                subj,
+                                OWL.sameAs,
+                                URIRef(normalized_uri),
+                            )
                         )
-                    )
     return g
 
 
