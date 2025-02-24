@@ -307,6 +307,8 @@ def make_appellations(
         xpath_expression = ".//tei:persName"
     elif tag_name.endswith("org"):
         xpath_expression = ".//tei:orgName"
+    elif tag_name.endswith("bibl"):
+        xpath_expression = ".//tei:title[1]"
     else:
         return g
     if special_xpath:
