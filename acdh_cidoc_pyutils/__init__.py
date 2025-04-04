@@ -117,6 +117,8 @@ def coordinates_to_p168(
         if verbose:
             print(e, subj)
         return g
+    lat = lat.replace(",", "")
+    lng = lng.replace(",", "")
     if inverse:
         lat, lng = lng, lat
     g.set(
