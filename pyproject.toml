@@ -1,0 +1,18 @@
+[project]
+name = "acdh-cidoc-pyutils"
+version = "1.11"
+description = "Helper functions for the generation of CIDOC CRMish RDF (from XML/TEI data)"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "acdh-arche-assets>=3.25.0",
+    "acdh-tei-pyutils>=1.6",
+    "rdflib>=7.5.0",
+]
+
+[dependency-groups]
+dev = [
+    "coverage>=7.13.2",
+    "pytest>=9.0.2",
+    "ruff>=0.14.14",
+]

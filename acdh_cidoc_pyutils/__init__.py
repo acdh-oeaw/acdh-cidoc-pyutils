@@ -1,23 +1,24 @@
-import uuid
 import os
+import uuid
 from typing import Union
 
-from lxml.etree import Element
-from rdflib import Graph, Literal, URIRef, XSD, RDF, RDFS, OWL
-from slugify import slugify
-from AcdhArcheAssets.uri_norm_rules import get_normalized_uri
-from acdh_tei_pyutils.utils import make_entity_label, check_for_hash, extract_fulltext
 from acdh_tei_pyutils.tei import TeiReader
+from acdh_tei_pyutils.utils import check_for_hash, extract_fulltext, make_entity_label
+from AcdhArcheAssets.uri_norm_rules import get_normalized_uri
+from lxml.etree import Element
+from rdflib import OWL, RDF, RDFS, XSD, Graph, Literal, URIRef
+from slugify import slugify
+
 from acdh_cidoc_pyutils.namespaces import (
     CIDOC,
-    FRBROO,
-    SARI_FRBROO,
-    NSMAP,
     DATE_ATTRIBUTE_DICT,
-    SARI,
+    FRBROO,
     GEO,
+    NSMAP,
+    SARI,
+    SARI_FRBROO,
 )
-from acdh_cidoc_pyutils.utils import remove_trailing_slash
+from acdh_cidoc_pyutils.utils import normalize_xsd_gYear, remove_trailing_slash
 
 authority_patterns = [
     "pmb.acdh.oeaw.ac.at",
@@ -56,8 +57,8 @@ def tei_relation_to_SRPC3_in_social_relation(
         Graph: A Graph object containing the SRPC3_in_social_relation
     """  # noqa: E501
     g = Graph()
-    source = f'{entity_prefix}{check_for_hash(node.attrib["active"])}'
-    target = f'{entity_prefix}{check_for_hash(node.attrib["passive"])}'
+    source = f"{entity_prefix}{check_for_hash(node.attrib['active'])}"
+    target = f"{entity_prefix}{check_for_hash(node.attrib['passive'])}"
     label = node.attrib["n"]
     rel_type = default_rel_type
     orig_rel_type = node.attrib["name"]
@@ -181,15 +182,16 @@ def date_to_literal(
         return_value = Literal(not_known_value, lang=default_lang)
     else:
         if len(date_str) == 4:
-            return_value = Literal(date_str, datatype=XSD.gYear)
+            return_value = Literal(normalize_xsd_gYear(date_str), datatype=XSD.gYear)
         elif len(date_str) == 5 and date_str.startswith("-"):
-            return_value = Literal(date_str, datatype=XSD.gYear)
+            return_value = Literal(normalize_xsd_gYear(date_str), datatype=XSD.gYear)
         elif len(date_str) == 7:
             return_value = Literal(date_str, datatype=XSD.gYearMonth)
         elif len(date_str) == 10:
             return_value = Literal(date_str, datatype=XSD.date)
         else:
             return_value = Literal(date_str, datatype=XSD.string)
+
     return return_value
 
 
