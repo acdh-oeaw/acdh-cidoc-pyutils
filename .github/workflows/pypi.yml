@@ -15,7 +15,7 @@ jobs:
     - name: config
       run: |
         RELEASE=${GITHUB_REF##*/}
-        sed -i -e "s/version=\".*\"/version=\"$RELEASE\"/" pyproject.toml
+        sed -i -e "s/version = \".*\"/version = \"$RELEASE\"/" pyproject.toml
         echo $RELEASE
     - name: Build and publish
       env:
