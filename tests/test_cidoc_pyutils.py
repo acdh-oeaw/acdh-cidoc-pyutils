@@ -1,32 +1,31 @@
-import unittest
 import os
-import lxml.etree as ET
+import unittest
 
-from lxml.etree import Element
-from rdflib import Graph, URIRef, RDF
+import lxml.etree as ET
 from acdh_tei_pyutils.tei import TeiReader
 from acdh_tei_pyutils.utils import get_xmlid
-
-from acdh_cidoc_pyutils.utils import remove_trailing_slash
+from lxml.etree import Element
+from rdflib import RDF, Graph, URIRef
 
 from acdh_cidoc_pyutils import (
-    date_to_literal,
-    make_uri,
-    create_e52,
-    normalize_string,
-    extract_begin_end,
-    make_appellations,
-    make_e42_identifiers,
     coordinates_to_p168,
-    make_birth_death_entities,
-    make_occupations,
+    create_e52,
+    date_to_literal,
+    extract_begin_end,
     make_affiliations,
+    make_appellations,
+    make_birth_death_entities,
+    make_e42_identifiers,
+    make_occupations,
+    make_uri,
+    normalize_string,
     p89_falls_within,
-    tei_relation_to_SRPC3_in_social_relation,
     p95i_was_formed_by,
+    tei_relation_to_SRPC3_in_social_relation,
     teidoc_as_f24_publication_expression,
 )
-from acdh_cidoc_pyutils.namespaces import NSMAP, CIDOC
+from acdh_cidoc_pyutils.namespaces import CIDOC, NSMAP
+from acdh_cidoc_pyutils.utils import remove_trailing_slash
 
 sample = """
 <TEI xmlns="http://www.tei-c.org/ns/1.0">
@@ -106,7 +105,7 @@ sample = """
 """
 
 
-DATE_STRINGS = ["1900", "-1900", "1900-01", "1901-01-01", "foo", "", None]
+DATE_STRINGS = ["1900", "-1900", "1900-01", "1901-01-01", "foo", "", None, "-389"]
 DATE_TYPES = [
     "http://www.w3.org/2001/XMLSchema#gYear",
     "http://www.w3.org/2001/XMLSchema#gYear",
@@ -115,6 +114,7 @@ DATE_TYPES = [
     "http://www.w3.org/2001/XMLSchema#string",
     "None",
     "None",
+    "http://www.w3.org/2001/XMLSchema#gYear",
 ]
 
 
@@ -137,6 +137,10 @@ class TestTestTest(unittest.TestCase):
         for i, x in enumerate(DATE_STRINGS):
             date_literal = date_to_literal(x)
             self.assertEqual(f"{date_literal.datatype}", DATE_TYPES[i])
+
+    def text_002a_four_digit_year(self):
+        sample = "-389"
+        self.assertEqual(sample, f"{date_to_literal(sample)}")
 
     def test_003_make_uri(self):
         domain = "https://hansi4ever.com/"
