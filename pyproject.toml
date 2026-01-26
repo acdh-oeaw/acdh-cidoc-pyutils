@@ -1,6 +1,6 @@
 [project]
 name = "acdh-cidoc-pyutils"
-version = "1.11"
+version = "1.12.1"
 description = "Helper functions for the generation of CIDOC CRMish RDF (from XML/TEI data)"
 readme = "README.md"
 requires-python = ">=3.10"
