@@ -33,7 +33,7 @@ authority_patterns = [
 def tei_relation_to_SRPC3_in_social_relation(
     node: Element,
     domain="https://foo-bar/",
-    lookup_dict={},
+    lookup_dict=None,
     default_type_domain="http://pfp-schema.acdh.oeaw.ac.at/types/person-person/#",
     default_rel_type="In-relation-to",
     lang="de",
@@ -469,22 +469,21 @@ def make_e42_identifiers(
             label_value = normalize_string(f"{default_prefix}{x.text}")
             g.add((idno_uri, RDFS.label, Literal(label_value, lang=lang)))
             g.add((idno_uri, RDF.value, Literal(normalize_string(x.text))))
-            if same_as:
-                if x.text.startswith("http"):
-                    normalized_uri = get_normalized_uri(x.text)
-                    if authority_patterns:
-                        for pattern in authority_patterns:
-                            if pattern in normalized_uri:
-                                g.add((subj, OWL.sameAs, URIRef(normalized_uri)))
-                                break
-                    else:
-                        g.add(
-                            (
-                                subj,
-                                OWL.sameAs,
-                                URIRef(normalized_uri),
-                            )
+            if same_as and x.text.startswith("http"):
+                normalized_uri = get_normalized_uri(x.text)
+                if authority_patterns:
+                    for pattern in authority_patterns:
+                        if pattern in normalized_uri:
+                            g.add((subj, OWL.sameAs, URIRef(normalized_uri)))
+                            break
+                else:
+                    g.add(
+                        (
+                            subj,
+                            OWL.sameAs,
+                            URIRef(normalized_uri),
                         )
+                    )
     return g
 
 
