@@ -55,7 +55,7 @@ def tei_relation_to_SRPC3_in_social_relation(
 
     Returns:
         Graph: A Graph object containing the SRPC3_in_social_relation
-    """  # noqa: E501
+    """
     g = Graph()
     source = f"{entity_prefix}{check_for_hash(node.attrib['active'])}"
     target = f"{entity_prefix}{check_for_hash(node.attrib['passive'])}"
@@ -118,8 +118,8 @@ def coordinates_to_p168(
         if verbose:
             print(e, subj)
         return g
-    lat = lat.replace(",", "")
-    lng = lng.replace(",", "")
+    lat = lat.replace(",", ".")
+    lng = lng.replace(",", ".")
     if inverse:
         lat, lng = lng, lat
     g.set(
@@ -133,10 +133,10 @@ def coordinates_to_p168(
 
 
 def extract_begin_end(
-    date_object: Union[Element, dict],
+    date_object: Element | dict,
     fill_missing=True,
     attribute_map=DATE_ATTRIBUTE_DICT,
-) -> tuple[Union[str, bool], Union[str, bool]]:
+) -> tuple[str | bool, str | bool]:
     final_start, final_end = None, None
     start, end, when = None, None, None
     for key, value in attribute_map.items():
@@ -174,16 +174,12 @@ def extract_begin_end(
 
 
 def date_to_literal(
-    date_str: Union[str, bool], not_known_value="undefined", default_lang="en"
+    date_str: str | bool, not_known_value="undefined", default_lang="en"
 ) -> Literal:
-    if date_str is None:
-        return_value = Literal(not_known_value, lang=default_lang)
-    elif date_str == "":
+    if date_str is None or date_str == "":
         return_value = Literal(not_known_value, lang=default_lang)
     else:
-        if len(date_str) == 4:
-            return_value = Literal(normalize_xsd_gYear(date_str), datatype=XSD.gYear)
-        elif len(date_str) == 5 and date_str.startswith("-"):
+        if len(date_str) == 4 or len(date_str) == 5 and date_str.startswith("-"):
             return_value = Literal(normalize_xsd_gYear(date_str), datatype=XSD.gYear)
         elif len(date_str) == 7:
             return_value = Literal(date_str, datatype=XSD.gYearMonth)
@@ -196,8 +192,7 @@ def date_to_literal(
 
 
 def make_uri(domain="https://foo.bar/whatever", version="", prefix="") -> URIRef:
-    if domain.endswith("/"):
-        domain = domain[:-1]
+    domain = domain.removesuffix("/")
     some_id = f"{uuid.uuid1()}"
     uri_parts = [domain, version, prefix, some_id]
     uri = "/".join([x for x in uri_parts if x != ""])
@@ -206,7 +201,7 @@ def make_uri(domain="https://foo.bar/whatever", version="", prefix="") -> URIRef
 
 def create_e52(
     uri: URIRef,
-    type_uri: Union[URIRef, None] = None,
+    type_uri: URIRef | None = None,
     begin_of_begin="",
     end_of_end="",
     label=True,
@@ -520,8 +515,7 @@ def make_occupations(
                 pass
         else:
             occ_id = f"{i}"
-        if occ_id.startswith("#"):
-            occ_id = occ_id[1:]
+        occ_id = occ_id.removeprefix("#")
         occ_uri = URIRef(f"{base_uri}/{occ_id}")
         occ_uris.append(occ_uri)
         g.add((occ_uri, RDF.type, FRBROO["F51_Pursuit"]))
@@ -581,8 +575,7 @@ def make_affiliations(
             org_label = normalize_string(
                 " ".join(x.xpath(org_label_xpath, namespaces=NSMAP))
             )
-        if affiliation_id.startswith("#"):
-            affiliation_id = affiliation_id[1:]
+        affiliation_id = affiliation_id.removeprefix("#")
         org_affiliation_uri = URIRef(f"{domain}{affiliation_id}")
         if add_org_object:
             g.add((org_affiliation_uri, RDF.type, CIDOC["E74_Group"]))
@@ -671,8 +664,7 @@ def make_birth_death_entities(
     except IndexError:
         process_place = False
     if process_place:
-        if place_node.startswith("#"):
-            place_node = place_node[1:]
+        place_node = place_node.removeprefix("#")
         place_uri = URIRef(f"{domain}{place_node}")
         g.add((event_uri, CIDOC["P7_took_place_at"], place_uri))
     return (g, event_uri, time_stamp_uri)
@@ -769,7 +761,7 @@ def teidoc_as_f24_publication_expression(
         type_lang (str, optional): Language for the type label (default is "en").
     Returns:
         tuple[URIRef, Graph, list]: A tuple containing the URI of the publication expression, the RDF graph and a list of mentioned entity-ids and their type.
-    """  # noqa: E501
+    """
 
     domain = remove_trailing_slash(domain)
     g = Graph()
