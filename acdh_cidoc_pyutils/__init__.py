@@ -1,6 +1,5 @@
 import os
 import uuid
-from typing import Union
 
 from acdh_tei_pyutils.tei import TeiReader
 from acdh_tei_pyutils.utils import check_for_hash, extract_fulltext, make_entity_label
