@@ -818,3 +818,38 @@ def teidoc_as_f24_publication_expression(
             g.add((subj, CIDOC["P67_refers_to"], URIRef(f"{domain}/{x[0]}")))
 
     return subj, g, mentions
+
+
+gender_mapping = {
+    "weiblich": URIRef("https://pfp-schema.acdh.oeaw.ac.at/types/gender/#female"),
+    "female": URIRef("https://pfp-schema.acdh.oeaw.ac.at/types/gender/#female"),
+    "männlich": URIRef("https://pfp-schema.acdh.oeaw.ac.at/types/gender/#male"),
+    "male": URIRef("https://pfp-schema.acdh.oeaw.ac.at/types/gender/#male"),
+    "egal": URIRef("https://pfp-schema.acdh.oeaw.ac.at/types/gender/#unknown"),
+    "not-set": URIRef("https://pfp-schema.acdh.oeaw.ac.at/types/gender/#unknown"),
+    "transgender": URIRef(
+        "https://pfp-schema.acdh.oeaw.ac.at/types/gender/#not-applicable"
+    ),
+}
+
+
+def pfpg_has_gender(subj: URIRef, value: str, gender_mapping=gender_mapping) -> Graph:
+    """Create an RDF graph linking a subject to its PFP gender type.
+
+    Labels absent from ``gender_mapping`` are mapped to the unknown gender type.
+
+    Args:
+        subj: URI of the subject to describe.
+        value: Source gender label.
+        gender_mapping: Mapping from source labels to gender type URIs.
+
+    Returns:
+        A graph containing the subject's ``has_gender`` triple.
+    """
+    g = Graph()
+    try:
+        gender_type = gender_mapping[value]
+    except KeyError:
+        gender_type = URIRef("https://pfp-schema.acdh.oeaw.ac.at/types/gender/#unknown")
+    g.add((subj, URIRef("https://pfp-schema.acdh.oeaw.ac.at/#has_gender"), gender_type))
+    return g
